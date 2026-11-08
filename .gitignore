@@ -20,3 +20,15 @@ Tools/rebuild-graffiti-shape.py
 docs/shader-studio-audit.txt
 
 !Samples/Graffiti/Graffiti-Sample.pptx
+
+# Local research and retired experiments
+Samples/Graffiti/MATERIAL-RESEARCH.md
+Samples/Graffiti/Graffiti.hlsl
+Host/NATIVE-PICKER.txt
+Tools/CheckPaused.cs
+Tools/RestyleGraffiti.cs
+Tools/CreateGraffitiFixture.cs
+Tools/GraffitiProbe/Program.cs
+Tools/GraffitiProbe/GraffitiProbe.csproj
+Tools/GraffitiDualProbe/Program.cs
+Tools/GraffitiDualProbe/GraffitiDualProbe.csproj
