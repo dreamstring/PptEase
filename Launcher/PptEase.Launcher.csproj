@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net9.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><AssemblyName>PptEase-Standalone</AssemblyName><PublishSingleFile>true</PublishSingleFile><SelfContained>true</SelfContained><IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract></PropertyGroup>
+<ItemGroup><EmbeddedResource Include="$(PayloadPath)" LogicalName="PptEase.Payload.zip" /></ItemGroup>
+</Project>

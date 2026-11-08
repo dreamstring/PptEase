@@ -38,7 +38,7 @@ Windows PowerPoint 增强工具：排版辅助、原生取色、自由画布、G
 - [Shader Studio](docs/Shader-Studio.md)
 - [交互控件](docs/Shape-Slider.md)
 
-本仓库不包含 Office 二进制、本机日志、旧测试输出或凭据。尚未指定开源许可证，不等于授予第三方开源使用许可。
+本仓库不包含 Office 二进制、本机日志、旧测试输出或凭据。插件源码采用 [GPL-3.0-only](LICENSE)。Samples 中作者个人作品保留其单独声明的权利，不适用插件源码许可证。
 
 ## 界面语言
 
@@ -86,10 +86,14 @@ The output is `publish/PptEase.exe`. Development builds and standalone releases 
 - [Shader Studio](docs/Shader-Studio.md#english)
 - [Interactive controls](docs/Shape-Slider.md#english)
 
-The repository excludes Office binaries, local logs, old test outputs, and credentials. No open-source license has been specified; public access does not itself grant an open-source license.
+The repository excludes Office binaries, local logs, old test outputs, and credentials. Plugin source code is licensed under [GPL-3.0-only](LICENSE). Personal works in Samples retain their separately stated rights and are excluded from the plugin source license.
 
 ## Interface language
 
 Chinese and English UI are supported. PptEase follows PowerPoint's display language at startup; other languages fall back to English. Ribbon commands, dynamic menus, the manager, Shader Studio and operation messages share the same resources. Standalone launches prefer the connected PPT host, then Office language settings, then the system UI language. Restart PowerPoint and standalone windows after changing Office's display language.
 
 Presentation content, font names, Shader source and parameter identifiers are never translated. Markdown documentation is Chinese first, followed by English. For development testing, set `PPTEASE_UI_LANGUAGE` to `zh-CN` or `en`.
+
+单 EXE 构建：`./build-standalone.ps1`。首次运行自动解包到本机应用数据目录，无需手动解压；仍需安装 PowerPoint，GLSL 需要 WebView2 Runtime。
+
+Single EXE build: `./build-standalone.ps1`. First launch extracts the bundled application into local application data automatically. PowerPoint is required; GLSL requires WebView2 Runtime.
