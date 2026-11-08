@@ -1,0 +1,20 @@
+**/bin/
+**/obj/
+publish/
+artifacts/
+.vs/
+*.user
+*.suo
+*.log
+*.zip
+*.pptx
+*.pptm
+GOAL.json
+validation/
+Host/identifiers/
+
+# Historical one-off development experiments
+Tools/create-generated-sdf.py
+Tools/CreateDualGraffiti.py
+Tools/rebuild-graffiti-shape.py
+docs/shader-studio-audit.txt

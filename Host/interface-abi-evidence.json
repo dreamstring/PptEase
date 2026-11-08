@@ -1,0 +1,79 @@
+{
+  "scope": "Read-only native installed typelib metadata, no PowerPoint UI or registry writes",
+  "interfaces": [
+    {
+      "library": "{AC0714F2-3D04-11D1-AE7D-00A0C90F26F4}",
+      "version": "1.0",
+      "name": "_IDTExtensibility2",
+      "guid": "{B65AD801-ABAF-11D0-BB8B-00A0C90F2744}",
+      "typeKind": 4,
+      "flags": 4176,
+      "dual": true,
+      "functions": [
+        {
+          "names": [
+            "OnConnection",
+            "Application",
+            "ConnectMode",
+            "AddInInst",
+            "custom"
+          ],
+          "vtableByteOffset": 56,
+          "arguments": "((9, 1, None), ((29, 50332032), 1, None), (9, 1, None), ((26, (27, 12)), 1, None))"
+        },
+        {
+          "names": [
+            "OnDisconnection",
+            "RemoveMode",
+            "custom"
+          ],
+          "vtableByteOffset": 64,
+          "arguments": "(((29, 50332288), 1, None), ((26, (27, 12)), 1, None))"
+        },
+        {
+          "names": [
+            "OnAddInsUpdate",
+            "custom"
+          ],
+          "vtableByteOffset": 72,
+          "arguments": "(((26, (27, 12)), 1, None),)"
+        },
+        {
+          "names": [
+            "OnStartupComplete",
+            "custom"
+          ],
+          "vtableByteOffset": 80,
+          "arguments": "(((26, (27, 12)), 1, None),)"
+        },
+        {
+          "names": [
+            "OnBeginShutdown",
+            "custom"
+          ],
+          "vtableByteOffset": 88,
+          "arguments": "(((26, (27, 12)), 1, None),)"
+        }
+      ]
+    },
+    {
+      "library": "{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}",
+      "version": "2.8",
+      "name": "IRibbonExtensibility",
+      "guid": "{000C0396-0000-0000-C000-000000000046}",
+      "typeKind": 4,
+      "flags": 4160,
+      "dual": true,
+      "functions": [
+        {
+          "names": [
+            "GetCustomUI",
+            "RibbonID"
+          ],
+          "vtableByteOffset": 56,
+          "arguments": "((8, 1, None),)"
+        }
+      ]
+    }
+  ]
+}

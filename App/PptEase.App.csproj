@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>PptEase</AssemblyName>
+    <RootNamespace>PptEase</RootNamespace>
+    <Version>0.1.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/bin/**;**/obj/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\ShaderPayload.cs" Link="Shader\ShaderPayload.cs" />
+    <Compile Include="..\Shared\ShaderComponent.cs" Link="Shader\ShaderComponent.cs" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
+    <Content Include="Shader\preview.html" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Host\bin\PptEase.Host.dll" Link="Host\PptEase.Host.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Host\bin\PptEase.CanvasInputV3.dll" Link="CanvasProbe\PptEase.CanvasInputV3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

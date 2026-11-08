@@ -1,0 +1,33 @@
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using PptEase.Shader;
+
+var values=new Dictionary<string,float>{{"gain",1f}};
+const string source="float4 main(float4 p:SV_POSITION):SV_TARGET{return float4(gain,0,0,1);}";
+bool parametersChanged;
+using(var readback=new D3DShaderRenderer(32,32)){
+    readback.CompileComponent(source,values,Array.Empty<D3DShaderRenderer.InputTexture>());
+    var first=readback.Render(0,0);
+    values["gain"]=.25f;readback.UpdateParameters(values);
+    var second=readback.Render(0,0);
+    parametersChanged=first[2]==255&&second[2]>=63&&second[2]<=65;
+}
+IntPtr window=Native.CreateWindowEx(0,"STATIC","PptEase GPU probe",0x80000000,-20000,-20000,640,360,IntPtr.Zero,IntPtr.Zero,IntPtr.Zero,IntPtr.Zero);
+if(window==IntPtr.Zero)throw new InvalidOperationException("Cannot create private test HWND.");
+try{
+    using var renderer=new D3DShaderRenderer(640,360);
+    renderer.CompileComponent(source,values,Array.Empty<D3DShaderRenderer.InputTexture>());
+    renderer.AttachPresentationWindow(window);
+    int occluded=0;
+    for(int i=0;i<120;i++){
+        values["gain"]=i/120f;renderer.UpdateParameters(values);
+        if(renderer.PresentFrame(i/60f,.3f,false)!=0)occluded++;
+    }
+    bool passed=parametersChanged&&renderer.DeviceKind=="Hardware"&&renderer.PresentedFrames==120&&renderer.ReadbackFrames==0;
+    Console.WriteLine(JsonSerializer.Serialize(new{passed,renderer.DeviceKind,renderer.PresentedFrames,renderer.ReadbackFrames,parametersChanged,occluded,scope="private hidden HWND; validates GPU API and live constants, not visible FPS or PowerPoint integration"}));
+    return passed?0:1;
+}finally{Native.DestroyWindow(window);}
+static class Native{
+ [DllImport("user32.dll",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr CreateWindowEx(uint ex,string cls,string title,uint style,int x,int y,int w,int h,IntPtr parent,IntPtr menu,IntPtr instance,IntPtr data);
+ [DllImport("user32.dll")] public static extern bool DestroyWindow(IntPtr hwnd);
+}

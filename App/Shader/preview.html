@@ -1,0 +1,58 @@
+<!doctype html><html><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e9edf1}canvas{width:100%;height:100%;display:block}#error{position:absolute;inset:12px;white-space:pre-wrap;background:#fff8f2;color:#9c330f;font:12px/1.5 Consolas;padding:12px;display:none}</style><canvas id="canvas"></canvas><div id="error"></div>
+<script>
+(()=>{'use strict';
+const canvas=document.querySelector('canvas'),error=document.querySelector('#error');
+const gl=canvas.getContext('webgl2',{preserveDrawingBuffer:true,alpha:false});
+if(!gl){error.style.display='block';error.textContent='WebGL 2 无法创建。请检查 WebView2 图形支持。';window.preview={selfTest:()=>({ok:false,error:error.textContent})};return;}
+let customTextures=[],customParameters={};
+let program,buffer,texture,time=0,roughness=.3,playing=false,disposed=false,frame=0,last=0,renderCount=0;
+const vertex='#version 300 es\nin vec2 position;void main(){gl_Position=vec4(position,0,1);}';
+const defaultSource=`#version 300 es
+precision highp float;
+uniform float time;
+uniform float roughness;
+uniform vec2 resolution;
+uniform sampler2D previewTexture;
+out vec4 color;
+void main(){
+  vec2 uv=gl_FragCoord.xy/resolution;
+  vec3 material=texture(previewTexture,uv*3.0).rgb;
+  float glow=0.55+0.45*sin(time+uv.x*6.2831853);
+  color=vec4(material*glow*(1.0-roughness*0.55),1.0);
+}`;
+function shader(type,source){let s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){let message=gl.getShaderInfoLog(s);gl.deleteShader(s);throw Error(message);}return s;}
+function compile(source){let vs,fs,next;try{vs=shader(gl.VERTEX_SHADER,vertex);fs=shader(gl.FRAGMENT_SHADER,source);next=gl.createProgram();gl.attachShader(next,vs);gl.attachShader(next,fs);gl.linkProgram(next);if(!gl.getProgramParameter(next,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(next));if(program)gl.deleteProgram(program);program=next;next=null;error.style.display='none';render();return {ok:true};}catch(e){if(next)gl.deleteProgram(next);error.textContent=String(e.message||e);error.style.display='block';return {ok:false,error:error.textContent};}finally{if(vs)gl.deleteShader(vs);if(fs)gl.deleteShader(fs);}}
+buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+const size=64,pixels=new Uint8Array(size*size*4);for(let y=0;y<size;y++)for(let x=0;x<size;x++){let c=((x>>3)+(y>>3))%2?[235,125,45]:[22,43,65],p=(y*size+x)*4;pixels.set([...c,255],p);}gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,size,size,0,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+function render(width,height){if(disposed||!program||gl.isContextLost())return;let w=width||Math.max(1,Math.round(canvas.clientWidth*devicePixelRatio)),h=height||Math.max(1,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.useProgram(program);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);const a=gl.getAttribLocation(program,'position');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.uniform1i(gl.getUniformLocation(program,'previewTexture'),0);gl.uniform1f(gl.getUniformLocation(program,'time'),time);gl.uniform1f(gl.getUniformLocation(program,'roughness'),roughness);gl.uniform2f(gl.getUniformLocation(program,'resolution'),w,h);for(const [name,value] of Object.entries(customParameters))gl.uniform1f(gl.getUniformLocation(program,name),value);customTextures.forEach((item,index)=>{gl.activeTexture(gl.TEXTURE1+index);gl.bindTexture(gl.TEXTURE_2D,item.texture);gl.uniform1i(gl.getUniformLocation(program,item.name),index+1);});gl.drawArrays(gl.TRIANGLES,0,3);renderCount++;}
+function syncLoop(){if(frame){cancelAnimationFrame(frame);frame=0;}if(playing&&!disposed&&!gl.isContextLost()){last=performance.now();frame=requestAnimationFrame(loop);}}
+function loop(now){frame=0;if(disposed||!playing||gl.isContextLost())return;time+=Math.min((now-last)/1000,.1);render();last=now;frame=requestAnimationFrame(loop);}
+function read(t){time=t;render(64,64);const data=new Uint8Array(64*64*4);gl.readPixels(0,0,64,64,gl.RGBA,gl.UNSIGNED_BYTE,data);let hash=2166136261,nonzero=false;for(let i=0;i<data.length;i++){hash=Math.imul(hash^data[i],16777619)>>>0;if(i%4!==3&&data[i])nonzero=true;}return {hash:hash.toString(16),nonzero};}
+function configureBindings(parameters,textures){
+ const next=[];
+ try{
+  if(textures.length>8||textures.length+1>gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS))throw Error('Too many textures');
+  const types=new Map();for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){const u=gl.getActiveUniform(program,i);types.set(u.name,u.type);}
+  for(const [name,type] of types){if(type===gl.SAMPLER_2D&&name!=='previewTexture'&&!textures.some(t=>t.name===name))throw Error('Missing texture: '+name);}
+  for(const [name,value] of Object.entries(parameters)){if(!Number.isFinite(value))throw Error('Invalid parameter');if(types.has(name)&&types.get(name)!==gl.FLOAT)throw Error(name+' must be uniform float');}
+  for(const item of textures){
+   if(types.has(item.name)&&types.get(item.name)!==gl.SAMPLER_2D)throw Error(item.name+' must be sampler2D');
+   if(!Number.isInteger(item.width)||!Number.isInteger(item.height)||item.width<1||item.height<1||item.width>2048||item.height>2048)throw Error('Invalid texture size');
+   const bytes=Uint8Array.from(atob(item.rgba),c=>c.charCodeAt(0));if(bytes.length!==item.width*item.height*4)throw Error('Invalid texture data');
+   const t=gl.createTexture();next.push({name:item.name,texture:t});gl.activeTexture(gl.TEXTURE1+next.length-1);gl.bindTexture(gl.TEXTURE_2D,t);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,item.width,item.height,0,gl.RGBA,gl.UNSIGNED_BYTE,bytes);
+  }
+  if(gl.getError()!==gl.NO_ERROR)throw Error('Texture upload failed');
+  customTextures.forEach(t=>gl.deleteTexture(t.texture));customTextures=next;customParameters=parameters;return {ok:true};
+ }catch(e){next.forEach(t=>gl.deleteTexture(t.texture));return {ok:false,error:String(e.message||e)};}
+}
+window.preview={diagnostics:()=>({time,playing,renderCount,scheduled:frame!==0}),compile,configureBindings,exportFrame:(state)=>{if(disposed||gl.isContextLost())throw Error("WebGL context unavailable");if(!Number.isInteger(state.width)||!Number.isInteger(state.height)||state.width<16||state.height<16||state.width>2048||state.height>2048)throw Error("Invalid frame dimensions");playing=false;syncLoop();time=state.time;roughness=state.roughness;render(state.width,state.height);return canvas.toDataURL("image/png").split(",")[1];},setState:(state)=>{if(typeof state.time==='number')time=state.time;if(typeof state.roughness==='number')roughness=state.roughness;if(typeof state.playing==='boolean')playing=state.playing;syncLoop();render();},defaultSource,
+selfTest:()=>{const oldTime=time,oldPlay=playing;playing=false;const valid=compile(defaultSource),first=read(0),next=read(1),repeat=read(0),invalid=compile('#version 300 es\nthis is invalid'),afterError=read(0);error.style.display='none';time=oldTime;playing=oldPlay;syncLoop();render();const debug=gl.getExtension('WEBGL_debug_renderer_info');return {ok:valid.ok&&first.nonzero&&first.hash!==next.hash&&first.hash===repeat.hash&&!invalid.ok&&afterError.hash===first.hash,validCompiled:valid.ok,invalidRejected:!invalid.ok,timeChangesPixels:first.hash!==next.hash,repeatDeterministic:first.hash===repeat.hash,oldShaderSurvives:first.hash===afterError.hash,glError:gl.getError(),renderer:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),hash0:first.hash,hash1:next.hash};},
+dispose:()=>{disposed=true;cancelAnimationFrame(frame);gl.deleteProgram(program);gl.deleteBuffer(buffer);gl.deleteTexture(texture);customTextures.forEach(t=>gl.deleteTexture(t.texture));}};
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();error.textContent='图形上下文已丢失。请切换后端后重试。';error.style.display='block';playing=false;syncLoop();});
+window.preview.setLive=state=>{customParameters={...state.parameters};roughness=customParameters.roughness??.3;delete customParameters.roughness;time=state.time;playing=state.playing;syncLoop();render();};
+window.addEventListener('resize',()=>render());compile(defaultSource);
+})();
+</script></html>

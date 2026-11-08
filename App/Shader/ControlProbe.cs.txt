@@ -1,0 +1,17 @@
+using System.Text.Json;
+using System.Windows;
+using PptEase.Shader;
+internal static class ControlProbe {
+ [STAThread] private static int Main(string[] args) {
+  var app=new Application(); int result=1;
+  var control=new ShaderPreviewControl();
+  var window=new Window{Width=900,Height=560,Opacity=0,ShowInTaskbar=false,Content=control,Title="PptEase shader backend verification"};
+  window.Loaded+=async (_,_)=>{try{
+   var report=await control.RunSelfTestAsync(args.Length>0?args[0]:System.IO.Path.Combine(System.IO.Path.GetTempPath(),"PptEase-shader-selftest"));
+   string json=JsonSerializer.Serialize(report);Console.WriteLine(json);
+   using var parsed=JsonDocument.Parse(json);
+   result=parsed.RootElement.GetProperty("hlsl").GetProperty("ok").GetBoolean()&&parsed.RootElement.GetProperty("glsl").GetProperty("ok").GetBoolean()?0:1;
+  }catch(Exception e){Console.Error.WriteLine(e);result=1;}finally{control.Dispose();window.Close();app.Shutdown();}};
+  app.Run(window);return result;
+ }
+}

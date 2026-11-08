@@ -1,0 +1,27 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using PptEase.Shader;
+using var renderer = new D3DShaderRenderer(64, 64);
+var first = renderer.Render(0, .3f);
+var next = renderer.Render(1, .3f);
+var repeat = renderer.Render(0, .3f);
+string hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
+bool rejected = false;
+try { renderer.CompilePixelShader("broken shader"); } catch (InvalidOperationException) { rejected = true; }
+var afterError = renderer.Render(0, .3f);
+var report = new { Backend="D3D11", renderer.DeviceKind, renderer.FeatureLevel, Drawn = first.Where((b, i)=>i%4!=3).Any(b=>b!=0), TimeChangesPixels=hash(first)!=hash(next), RepeatDeterministic=hash(first)==hash(repeat), InvalidRejected=rejected, OldShaderSurvives=hash(first)==hash(afterError), Hash0=hash(first), Hash1=hash(next) };
+Console.WriteLine(JsonSerializer.Serialize(report));
+if (!report.Drawn || !report.TimeChangesPixels || !report.RepeatDeterministic || !report.InvalidRejected || !report.OldShaderSurvives) return 1;
+var bindings = new Dictionary<string,float> { ["gain"] = 1, ["roughness"] = .3f };
+var input = new D3DShaderRenderer.InputTexture { Name="albedo", Width=1, Height=1, Rgba=new byte[]{255,0,0,255} };
+string shader = "float4 main(float4 p:SV_POSITION):SV_TARGET{return albedo.Sample(peSampler,float2(.5,.5))*float4(gain,gain,gain,1);}";
+renderer.CompileComponent(shader,bindings,new[]{input});
+var red = renderer.Render(0,.3f);
+bindings["gain"] = .5f; renderer.CompileComponent(shader,bindings,new[]{input});
+var dim = renderer.Render(0,.3f);
+input.Rgba = new byte[]{0,0,0,255}; renderer.CompileComponent(shader,bindings,new[]{input});
+var black = renderer.Render(0,.3f);
+bool bindingsPassed = red[2] == 255 && dim[2] >= 126 && dim[2] <= 129 && black[2] == 0;
+Console.WriteLine(JsonSerializer.Serialize(new { bindingsPassed, red=red[2], dim=dim[2], black=black[2] }));
+if (!bindingsPassed) return 1;
+return 0;
