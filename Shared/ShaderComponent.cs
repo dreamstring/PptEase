@@ -29,26 +29,26 @@ namespace PptEase.Shader
 
         public void Validate()
         {
-            if (Version != 1) throw new InvalidDataException("不支持的 Shader 组件版本。");
-            if (Backend != "HLSL" && Backend != "GLSL") throw new InvalidDataException("Shader 后端必须为 HLSL 或 GLSL。");
-            if (String.IsNullOrWhiteSpace(Source) || Source.Length > 262144) throw new InvalidDataException("Shader 源码为空或超过限制。");
+            if (Version != 1) throw new InvalidDataException(global::PptEase.Localization.L.T("不支持的 Shader 组件版本。"));
+            if (Backend != "HLSL" && Backend != "GLSL") throw new InvalidDataException(global::PptEase.Localization.L.T("Shader 后端必须为 HLSL 或 GLSL。"));
+            if (String.IsNullOrWhiteSpace(Source) || Source.Length > 262144) throw new InvalidDataException(global::PptEase.Localization.L.T("Shader 源码为空或超过限制。"));
             if (Width < 16 || Height < 16 || Width > 2048 || Height > 2048 || FramesPerSecond < 1 || FramesPerSecond > 60)
-                throw new InvalidDataException("Shader 分辨率或帧率超出范围。");
-            if (Reentry != "restart" && Reentry != "resume") throw new InvalidDataException("未知的再次进入行为。");
-            if (Parameters == null || Parameters.Count > 64 || Textures == null || Textures.Count > 8) throw new InvalidDataException("Shader 参数或纹理数量超出限制。");
+                throw new InvalidDataException(global::PptEase.Localization.L.T("Shader 分辨率或帧率超出范围。"));
+            if (Reentry != "restart" && Reentry != "resume") throw new InvalidDataException(global::PptEase.Localization.L.T("未知的再次进入行为。"));
+            if (Parameters == null || Parameters.Count > 64 || Textures == null || Textures.Count > 8) throw new InvalidDataException(global::PptEase.Localization.L.T("Shader 参数或纹理数量超出限制。"));
             foreach (var parameter in Parameters)
-                if (!Identifier(parameter.Key) || Single.IsNaN(parameter.Value) || Single.IsInfinity(parameter.Value)) throw new InvalidDataException("Shader 参数名或值无效。");
+                if (!Identifier(parameter.Key) || Single.IsNaN(parameter.Value) || Single.IsInfinity(parameter.Value)) throw new InvalidDataException(global::PptEase.Localization.L.T("Shader 参数名或值无效。"));
             var names = new HashSet<string>();
-            if(Bindings==null||Bindings.Count>64)throw new InvalidDataException("参数绑定数量无效。");
-            foreach(var binding in Bindings)if(binding==null||!Parameters.ContainsKey(binding.Parameter)||binding.ShapeId<=0||Single.IsNaN(binding.Minimum)||Single.IsNaN(binding.Maximum)||Single.IsInfinity(binding.Minimum)||Single.IsInfinity(binding.Maximum)||binding.Minimum>=binding.Maximum)throw new InvalidDataException("参数绑定无效。");
+            if(Bindings==null||Bindings.Count>64)throw new InvalidDataException(global::PptEase.Localization.L.T("参数绑定数量无效。"));
+            foreach(var binding in Bindings)if(binding==null||!Parameters.ContainsKey(binding.Parameter)||binding.ShapeId<=0||Single.IsNaN(binding.Minimum)||Single.IsNaN(binding.Maximum)||Single.IsInfinity(binding.Minimum)||Single.IsInfinity(binding.Maximum)||binding.Minimum>=binding.Maximum)throw new InvalidDataException(global::PptEase.Localization.L.T("参数绑定无效。"));
             long textureBytes = 0;
             foreach (var texture in Textures)
             {
-                if (texture == null || !Identifier(texture.Name) || !names.Add(texture.Name) || Parameters.ContainsKey(texture.Name)) throw new InvalidDataException("Shader 纹理名称无效或重复。");
-                if (texture.Mime != "image/png" && texture.Mime != "image/jpeg") throw new InvalidDataException("纹理仅支持嵌入 PNG/JPEG。");
-                if (String.IsNullOrEmpty(texture.Data) || texture.Data.Length > ShaderPayload.MaximumBytes) throw new InvalidDataException("纹理数据为空或超限。");
+                if (texture == null || !Identifier(texture.Name) || !names.Add(texture.Name) || Parameters.ContainsKey(texture.Name)) throw new InvalidDataException(global::PptEase.Localization.L.T("Shader 纹理名称无效或重复。"));
+                if (texture.Mime != "image/png" && texture.Mime != "image/jpeg") throw new InvalidDataException(global::PptEase.Localization.L.T("纹理仅支持嵌入 PNG/JPEG。"));
+                if (String.IsNullOrEmpty(texture.Data) || texture.Data.Length > ShaderPayload.MaximumBytes) throw new InvalidDataException(global::PptEase.Localization.L.T("纹理数据为空或超限。"));
                 textureBytes += Convert.FromBase64String(texture.Data).Length;
-                if (textureBytes > 2 * 1024 * 1024) throw new InvalidDataException("嵌入纹理总量超过 2 MiB。");
+                if (textureBytes > 2 * 1024 * 1024) throw new InvalidDataException(global::PptEase.Localization.L.T("嵌入纹理总量超过 2 MiB。"));
             }
         }
 

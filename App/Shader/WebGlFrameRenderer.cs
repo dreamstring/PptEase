@@ -34,15 +34,15 @@ public sealed class WebGlFrameRenderer : IDisposable
         core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
         core.WebResourceRequested += (_,e) => { if (!e.Request.Uri.StartsWith("data:") && !e.Request.Uri.StartsWith("about:")) e.Response = environment.CreateWebResourceResponse(Stream.Null, 403, "Offline", ""); };
         var loaded = new TaskCompletionSource<bool>();
-        void Complete(object? sender, CoreWebView2NavigationCompletedEventArgs args) { core.NavigationCompleted -= Complete; if (args.IsSuccess) loaded.TrySetResult(true); else loaded.TrySetException(new IOException("WebGL 页面加载失败：" + args.WebErrorStatus)); }
+        void Complete(object? sender, CoreWebView2NavigationCompletedEventArgs args) { core.NavigationCompleted -= Complete; if (args.IsSuccess) loaded.TrySetResult(true); else loaded.TrySetException(new IOException(global::PptEase.Localization.L.T("WebGL 页面加载失败：") + args.WebErrorStatus)); }
         core.NavigationCompleted += Complete;
-        core.NavigateToString(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Shader", "preview.html")));
+        core.NavigateToString((await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Shader", "preview.html"))).Replace("<html>", "<html lang=\"" + global::PptEase.Localization.L.Language + "\">"));
         await loaded.Task.WaitAsync(TimeSpan.FromSeconds(20));
     }
     public async Task<string> DefaultSourceAsync()
     {
         await InitializeAsync();
-        return JsonSerializer.Deserialize<string>(await ExecuteAsync("window.preview.defaultSource")) ?? throw new InvalidOperationException("WebGL2 不可用。");
+        return JsonSerializer.Deserialize<string>(await ExecuteAsync("window.preview.defaultSource")) ?? throw new InvalidOperationException(global::PptEase.Localization.L.T("WebGL2 不可用。"));
     }
     public async Task CompileAsync(string source)
     {
@@ -55,7 +55,7 @@ public sealed class WebGlFrameRenderer : IDisposable
         if (disposed) throw new ObjectDisposedException(nameof(WebGlFrameRenderer));
         await InitializeAsync();
         string result = await ExecuteAsync("window.preview.exportFrame(" + JsonSerializer.Serialize(new { width, height, time, roughness }) + ")");
-        return JsonSerializer.Deserialize<string>(result) ?? throw new InvalidOperationException("WebGL 未返回图像帧。");
+        return JsonSerializer.Deserialize<string>(result) ?? throw new InvalidOperationException(global::PptEase.Localization.L.T("WebGL 未返回图像帧。"));
     }
     public async Task ConfigureAsync(ShaderComponent component)
     {
@@ -66,7 +66,7 @@ public sealed class WebGlFrameRenderer : IDisposable
             using var memory = new MemoryStream(Convert.FromBase64String(texture.Data));
             var decoder = BitmapDecoder.Create(memory, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             var frame = decoder.Frames[0];
-            if (frame.PixelWidth > 2048 || frame.PixelHeight > 2048) throw new InvalidDataException("纹理尺寸不能超过 2048×2048。");
+            if (frame.PixelWidth > 2048 || frame.PixelHeight > 2048) throw new InvalidDataException(global::PptEase.Localization.L.T("纹理尺寸不能超过 2048×2048。"));
             var bitmap = new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0);
             byte[] pixels = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4];
             bitmap.CopyPixels(pixels, bitmap.PixelWidth * 4, 0);
@@ -94,7 +94,7 @@ public sealed class WebGlFrameRenderer : IDisposable
         await InitializeAsync();
         string device=JsonSerializer.Deserialize<string>(await ExecuteAsync("(()=>{const g=document.querySelector('canvas').getContext('webgl2');const d=g&&g.getExtension('WEBGL_debug_renderer_info');return d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):''})()"))??"";
         if(string.IsNullOrWhiteSpace(device)||new[]{"swiftshader","software","llvmpipe","warp","basic render"}.Any(s=>device.Contains(s,StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException("WebGL 未确认硬件 GPU，已保留封面："+device);
+            throw new InvalidOperationException(global::PptEase.Localization.L.T("WebGL 未确认硬件 GPU，已保留封面：")+device);
         return device;
     }
     public void Dispose() { if (disposed) return; disposed = true; controller?.Close();View.Dispose(); }

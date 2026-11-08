@@ -7,3 +7,17 @@
 ## 体验方式
 
 安装 PptEase 后打开文稿并进入放映。左圆盘选择材质风格，右方形控制流动速度与滴液。未安装插件时显示静态封面。无需 VBA 或 ActiveX。
+
+---
+
+# English
+
+## Personal sample shared by the author
+
+[Download Graffiti-Sample.pptx](Graffiti-Sample.pptx?raw=true) (one slide).
+
+This is the author's personal artwork, shared separately to demonstrate PptEase shader playback and parameter controls. It is not a plugin feature, built-in material library, or part of the plugin's general technical implementation. Rights to the artwork and related assets remain with the author. Public availability does not grant permission to copy, adapt, or use them commercially.
+
+## Try the sample
+
+Install PptEase, open the presentation, and start the slideshow. The left disk selects the material style; the right square controls flow speed and dripping. Without the plugin, the slide shows a static cover. VBA and ActiveX are not required.

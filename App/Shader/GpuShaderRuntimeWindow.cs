@@ -106,12 +106,12 @@ public sealed class GpuShaderRuntimeWindow:Window
                 if(failed.TryGetValue(key,out var bad)&&bad==revision)continue;
                 try
                 {
-                    if(item.TryGetProperty("BindingErrors",out var bindingErrors)&&bindingErrors.GetArrayLength()>0)Log("参数控件不可用："+string.Join("；",bindingErrors.EnumerateArray().Select(e=>e.GetString())));
+                    if(item.TryGetProperty("BindingErrors",out var bindingErrors)&&bindingErrors.GetArrayLength()>0)Log(global::PptEase.Localization.L.T("参数控件不可用：")+string.Join("；",bindingErrors.EnumerateArray().Select(e=>e.GetString())));
                     var placement=item.GetProperty("Placement");
                     if(!placement.GetProperty("Visible").GetBoolean())
                     {
                         if(active.TryGetValue(key,out var suspended)){suspended.Surface.Suspend();foreach(var slider in suspended.Sliders.Values)slider.HideSurface();}
-                        Log(placement.GetProperty("Reason").GetString()??"静态封面");continue;
+                        Log(placement.GetProperty("Reason").GetString()??global::PptEase.Localization.L.T("静态封面"));continue;
                     }
                     if(active.TryGetValue(key,out var current)&&current.Revision!=revision){
                         if(item.GetProperty("Component").ValueKind==JsonValueKind.Null)continue;
@@ -185,7 +185,7 @@ public sealed class GpuShaderRuntimeWindow:Window
             await entry.Surface.InitializeAsync();
             if(closed||!active.TryGetValue(key,out current)||!ReferenceEquals(current,entry)){entry.Dispose();return;}
             entry.Ready=true;TraceTiming("gpu-initialized",watch.Elapsed.TotalMilliseconds,key);
-            Log("GPU 已预备 · "+entry.Component.Backend+" · 初始化 "+watch.ElapsedMilliseconds+" ms");
+            Log(global::PptEase.Localization.L.T("GPU 已预备 · ")+entry.Component.Backend+global::PptEase.Localization.L.T(" · 初始化 ")+watch.ElapsedMilliseconds+" ms");
         }catch(Exception ex){
             if(!closed&&active.TryGetValue(key,out var current)&&ReferenceEquals(current,entry)){
                 Remove(key);failed[key]=entry.Revision;Log(ex.ToString());

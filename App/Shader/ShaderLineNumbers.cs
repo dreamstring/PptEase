@@ -19,7 +19,8 @@ internal sealed class ShaderLineNumbers : FrameworkElement
     {
         dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(24,30,42)),null,new Rect(RenderSize));
         int first=editor.GetFirstVisibleLineIndex(), last=editor.GetLastVisibleLineIndex();
-        if(first<0||last<0)return;
+        if(first<0||last<0||editor.LineCount==0)return;
+        last=Math.Min(last,editor.LineCount-1);
         var typeface=new Typeface(editor.FontFamily,editor.FontStyle,editor.FontWeight,editor.FontStretch);
         double dpi=VisualTreeHelper.GetDpi(this).PixelsPerDip;
         for(int line=first;line<=last;line++) {

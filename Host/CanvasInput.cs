@@ -64,9 +64,9 @@ namespace PptEase.CanvasInputV3
             lastBounds = Inspect(); // Admit the exact supported native view before installing hooks.
             uint thread = GetCurrentThreadId();
             mouseHook = SetWindowsHookEx(7, mouseProc, IntPtr.Zero, thread);
-            if (mouseHook == IntPtr.Zero) throw new InvalidOperationException("画布鼠标接管失败：" + Marshal.GetLastWin32Error());
+            if (mouseHook == IntPtr.Zero) throw new InvalidOperationException(global::PptEase.Localization.L.T("画布鼠标接管失败：") + Marshal.GetLastWin32Error());
             keyboardHook = SetWindowsHookEx(2, keyboardProc, IntPtr.Zero, thread);
-            if (keyboardHook == IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; throw new InvalidOperationException("空格拖动接管失败：" + Marshal.GetLastWin32Error()); }
+            if (keyboardHook == IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; throw new InvalidOperationException(global::PptEase.Localization.L.T("空格拖动接管失败：") + Marshal.GetLastWin32Error()); }
             enabled=true; lastError=""; timer.Start(); return Status();
         }
         internal object Disable()
@@ -165,7 +165,7 @@ namespace PptEase.CanvasInputV3
         }
         private void ZoomAt(int x,int y,int delta,NativeCanvasBridge.ViewportInfo view)
         {
-            if(view.ScaleX<=0||view.ScaleY<=0)throw new InvalidOperationException("画布缩放坐标无效。");
+            if(view.ScaleX<=0||view.ScaleY<=0)throw new InvalidOperationException(global::PptEase.Localization.L.T("画布缩放坐标无效。"));
             dynamic w=app.ActiveWindow;
             anchorWorldX=(x-(double)w.PointsToScreenPixelsX(0))/view.ScaleX;
             anchorWorldY=(y-(double)w.PointsToScreenPixelsY(0))/view.ScaleY;

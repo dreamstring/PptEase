@@ -30,19 +30,19 @@ internal static class MaintenanceDeployment
                 }
                 foreach (var relative in new[] { "PptEase.dll", @"Host\PptEase.Host.dll" })
                     if (!SHA256.HashData(File.ReadAllBytes(Path.Combine(source, relative))).SequenceEqual(SHA256.HashData(File.ReadAllBytes(Path.Combine(target, relative)))))
-                        throw new IOException("维护程序复制校验失败。");
+                        throw new IOException(global::PptEase.Localization.L.T("维护程序复制校验失败。"));
             });
         string exe = Path.Combine(target, "PptEase.exe");
-        if (!File.Exists(exe)) throw new FileNotFoundException("安装包缺少维护程序。", exe);
+        if (!File.Exists(exe)) throw new FileNotFoundException(global::PptEase.Localization.L.T("安装包缺少维护程序。"), exe);
         return exe;
     }
     internal static void Register(string exe)
     {
         using var root = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
         using var existing = root.OpenSubKey(UninstallKey);
-        if (existing != null && Convert.ToInt32(existing.GetValue("PptEaseOwned", 0)) != 1) throw new InvalidOperationException("同名维护入口不属于本软件。");
+        if (existing != null && Convert.ToInt32(existing.GetValue("PptEaseOwned", 0)) != 1) throw new InvalidOperationException(global::PptEase.Localization.L.T("同名维护入口不属于本软件。"));
         using var key = root.CreateSubKey(UninstallKey);
-        key.SetValue("PptEaseOwned", 1); key.SetValue("DisplayName", "PPT 增强"); key.SetValue("DisplayVersion", "0.1");
+        key.SetValue("PptEaseOwned", 1); key.SetValue("DisplayName", global::PptEase.Localization.L.T("PPT 增强")); key.SetValue("DisplayVersion", "0.1");
         key.SetValue("InstallLocation", Path.GetDirectoryName(exe)!); key.SetValue("DisplayIcon", exe);
         key.SetValue("UninstallString", "\"" + exe + "\" --uninstall"); key.SetValue("ModifyPath", "\"" + exe + "\" --setup");
         key.SetValue("NoModify", 0); key.SetValue("NoRepair", 0);

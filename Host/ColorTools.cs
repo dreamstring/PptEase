@@ -36,10 +36,10 @@ namespace PptEase.Host
                 if (colorMode == "Idle") return;
                 try
                 {
-                    if (DateTime.UtcNow > colorDeadline) CancelColorMode("30秒未完成，已取消");
-                    else if (CurrentColorContext() != colorContext) CancelColorMode("页面或文稿已切换，已取消");
+                    if (DateTime.UtcNow > colorDeadline) CancelColorMode(global::PptEase.Localization.L.T("30秒未完成，已取消"));
+                    else if (CurrentColorContext() != colorContext) CancelColorMode(global::PptEase.Localization.L.T("页面或文稿已切换，已取消"));
                 }
-                catch { CancelColorMode("当前编辑视图已变化，已取消"); }
+                catch { CancelColorMode(global::PptEase.Localization.L.T("当前编辑视图已变化，已取消")); }
             };
             colorTimer.Start();
         }
@@ -51,12 +51,12 @@ namespace PptEase.Host
             try { if (selectionHandler != null && app != null) ComEventsHelper.Remove((object)app, EApplication, 2001, selectionHandler); } catch { }
             try { if (colorTimer != null) { colorTimer.Stop(); colorTimer.Dispose(); } } catch { }
             colorTimer = null;
-            CancelColorMode("增强已断开");
+            CancelColorMode(global::PptEase.Localization.L.T("增强已断开"));
         }
 
         public void PickColor(object control) { RibbonAction(StartNativePick); }
-        public void ApplyColor(object control) { CancelColorMode("选区赋色功能已移除"); }
-        public void CancelColor(object control) { CancelColorMode("用户取消"); }
+        public void ApplyColor(object control) { CancelColorMode(global::PptEase.Localization.L.T("选区赋色功能已移除")); }
+        public void CancelColor(object control) { CancelColorMode(global::PptEase.Localization.L.T("用户取消")); }
 
         private string CurrentColorContext()
         {
@@ -68,24 +68,24 @@ namespace PptEase.Host
         private void StartNativePick() { StartNativePick(null); }
         private void StartNativePick(List<string> explicitKeys)
         {
-            CancelColorMode("切换为原生吸管");
+            CancelColorMode(global::PptEase.Localization.L.T("切换为原生吸管"));
             List<ShapeHandle> all = GetShapes();
             List<string> keys = explicitKeys != null && explicitKeys.Count > 0 ? explicitKeys.Distinct().ToList() : SelectedKeys();
             List<ShapeHandle> selected = keys.Select(k => all.FirstOrDefault(h => h.Key == k)).ToList();
-            if (selected.Any(h => h == null)) throw new InvalidOperationException("选区已过期，请刷新后重试。");
+            if (selected.Any(h => h == null)) throw new InvalidOperationException(global::PptEase.Localization.L.T("选区已过期，请刷新后重试。"));
             // Preserve a live text range when the manager refers to the same native selection.
             bool sameSelection = new HashSet<string>(keys).SetEquals(SelectedKeys());
             bool textSelection = (int)app.ActiveWindow.Selection.Type == 3 && sameSelection;
-            if (selected.Count == 0 && !textSelection) throw new InvalidOperationException("请先选中文字、文本框、形状或线条。");
+            if (selected.Count == 0 && !textSelection) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选中文字、文本框、形状或线条。"));
             string command = textSelection ? "EyedropperFillText" : NativePickCommand(selected);
             if (explicitKeys != null && explicitKeys.Count > 0 && !sameSelection)
             {
                 for (int i = 0; i < selected.Count; i++) selected[i].Shape.Select(i == 0 ? -1 : 0);
             }
             if (!(bool)app.CommandBars.GetEnabledMso(command))
-                throw new InvalidOperationException("当前选区不能使用原生吸管。请退出对话框，选择可编辑的文字或图形后重试。");
+                throw new InvalidOperationException(global::PptEase.Localization.L.T("当前选区不能使用原生吸管。请退出对话框，选择可编辑的文字或图形后重试。"));
             app.CommandBars.ExecuteMso(command);
-            lastColorOperation = new { State = "已调用PPT原生吸管；点击取色，Esc取消", Direction = "native-eyedropper", Command = command, TargetCount = selected.Count, Utc = DateTime.UtcNow.ToString("o") };
+            lastColorOperation = new { State = global::PptEase.Localization.L.T("已调用PPT原生吸管；点击取色，Esc取消"), Direction = "native-eyedropper", Command = command, TargetCount = selected.Count, Utc = DateTime.UtcNow.ToString("o") };
             InvalidateColorRibbon();
         }
 
@@ -101,29 +101,29 @@ namespace PptEase.Host
                     int placeholder = (int)h.Shape.PlaceholderFormat.Type;
                     text = new[] { 1, 2, 3, 4, 5, 6, 13, 14, 15, 16 }.Contains(placeholder);
                 }
-                if (type == 6 || type == 19) throw new InvalidOperationException("请进入组合或表格，选择具体对象或文字。");
+                if (type == 6 || type == 19) throw new InvalidOperationException(global::PptEase.Localization.L.T("请进入组合或表格，选择具体对象或文字。"));
                 string next = text ? "EyedropperFillText" : type == 9 ? "EyedropperOutline" : "EyedropperFill";
-                if (command != null && command != next) throw new InvalidOperationException("混合选区包含不同颜色通道，请单独选择文字、形状或线条。");
+                if (command != null && command != next) throw new InvalidOperationException(global::PptEase.Localization.L.T("混合选区包含不同颜色通道，请单独选择文字、形状或线条。"));
                 command = next;
             }
-            if (command == null) throw new InvalidOperationException("请先选择取色目标。");
+            if (command == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择取色目标。"));
             return command;
         }
         private void StartColorBrush() { StartColorBrush(null); }
         private void StartColorBrush(List<string> explicitKeys)
         {
-            CancelColorMode("切换颜色工具");
+            CancelColorMode(global::PptEase.Localization.L.T("切换颜色工具"));
             List<ColorTarget> sources = explicitKeys != null && explicitKeys.Count > 0 ? CaptureKeyColorTargets(explicitKeys) : CaptureColorTargets((object)app.ActiveWindow.Selection);
             int rgb = ReadTargetColor(ResolveTarget(sources[0]), sources[0]);
-            for (int i = 1; i < sources.Count; i++) if (ReadTargetColor(ResolveTarget(sources[i]), sources[i]) != rgb) throw new InvalidOperationException("源选区包含多种颜色，请选一个颜色一致的对象或文字片段。");
-            if (rgb < 0) throw new InvalidOperationException("源文字包含混合颜色，请选择颜色一致的文字片段。");
+            for (int i = 1; i < sources.Count; i++) if (ReadTargetColor(ResolveTarget(sources[i]), sources[i]) != rgb) throw new InvalidOperationException(global::PptEase.Localization.L.T("源选区包含多种颜色，请选一个颜色一致的对象或文字片段。"));
+            if (rgb < 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("源文字包含混合颜色，请选择颜色一致的文字片段。"));
             brushColor = rgb;
             currentColor = ToHex(rgb);
             colorContext = CurrentColorContext();
             brushSourceSignature = TargetSignature(sources);
             colorDeadline = DateTime.UtcNow.AddSeconds(30);
             colorMode = "ApplyNextSelection";
-            lastColorOperation = new { State = "已吸取选区颜色；请在同一页选择一个不同目标以赋色", Direction = "selection-to-next-selection", Color = currentColor, SourceKinds = sources.Select(t => t.Kind).ToArray(), Utc = DateTime.UtcNow.ToString("o") };
+            lastColorOperation = new { State = global::PptEase.Localization.L.T("已吸取选区颜色；请在同一页选择一个不同目标以赋色"), Direction = "selection-to-next-selection", Color = currentColor, SourceKinds = sources.Select(t => t.Kind).ToArray(), Utc = DateTime.UtcNow.ToString("o") };
             InvalidateColorRibbon();
         }
 
@@ -148,14 +148,14 @@ namespace PptEase.Host
             if (colorMode != "ApplyNextSelection" || applyingColor) return;
             try
             {
-                if (DateTime.UtcNow > colorDeadline || CurrentColorContext() != colorContext) { CancelColorMode("页面、文稿或等待时间已变化"); return; }
+                if (DateTime.UtcNow > colorDeadline || CurrentColorContext() != colorContext) { CancelColorMode(global::PptEase.Localization.L.T("页面、文稿或等待时间已变化")); return; }
                 List<ColorTarget> targets;
                 try { targets = CaptureColorTargets(selection); } catch { return; } // Empty canvas does not paint.
                 if (TargetSignature(targets) == brushSourceSignature) return;
                 EnsureWritable(targets);
                 colorMode = "Idle"; // One-shot, before triggering any host event.
                 CommitColors(targets, brushColor);
-                lastColorOperation = new { State = "已把源颜色赋给新选区", Direction = "selection-to-next-selection", Color = currentColor, TargetCount = targets.Count, Kinds = targets.Select(t => t.Kind).ToArray(), Utc = DateTime.UtcNow.ToString("o") };
+                lastColorOperation = new { State = global::PptEase.Localization.L.T("已把源颜色赋给新选区"), Direction = "selection-to-next-selection", Color = currentColor, TargetCount = targets.Count, Kinds = targets.Select(t => t.Kind).ToArray(), Utc = DateTime.UtcNow.ToString("o") };
                 InvalidateColorRibbon();
             }
             catch (Exception ex) { ColorFailure(ex.Message); }
@@ -173,7 +173,7 @@ namespace PptEase.Host
         private void ColorFailure(string error)
         {
             colorMode = "Idle";
-            lastColorOperation = new { State = "颜色操作未完成", Error = error, Utc = DateTime.UtcNow.ToString("o") };
+            lastColorOperation = new { State = global::PptEase.Localization.L.T("颜色操作未完成"), Error = error, Utc = DateTime.UtcNow.ToString("o") };
             Log("color-error " + error);
             InvalidateColorRibbon();
         }
@@ -189,7 +189,7 @@ namespace PptEase.Host
             {
                 dynamic text = sel.TextRange;
                 int start = (int)text.Start, length = (int)text.Length;
-                if (length <= 0) throw new InvalidOperationException("请选中文字片段，或退出文字编辑后选择文本框。");
+                if (length <= 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请选中文字片段，或退出文字编辑后选择文本框。"));
                 string key = FindTextShapeKey((object)text, all);
                 targets.Add(new ColorTarget { Key = key, Kind = "TextRange", Start = start, Length = length });
             }
@@ -200,11 +200,11 @@ namespace PptEase.Host
                 {
                     ShapeHandle h = all.First(x => x.Key == key);
                     int type = (int)h.Shape.Type;
-                    if (type == 6 || type == 19) throw new InvalidOperationException("请进入组合或表格，选择要赋色的具体对象或文字。");
+                    if (type == 6 || type == 19) throw new InvalidOperationException(global::PptEase.Localization.L.T("请进入组合或表格，选择要赋色的具体对象或文字。"));
                     targets.Add(new ColorTarget { Key = key, Kind = type == 17 ? "TextBoxFont" : type == 9 ? "Line" : "Fill" });
                 }
             }
-            if (targets.Count == 0) throw new InvalidOperationException("请先在 PowerPoint 中选择文字、文本框、线条或形状。");
+            if (targets.Count == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先在 PowerPoint 中选择文字、文本框、线条或形状。"));
             return targets;
         }
 
@@ -215,9 +215,9 @@ namespace PptEase.Host
             foreach (string key in keys.Distinct())
             {
                 ShapeHandle h = all.FirstOrDefault(x => x.Key == key);
-                if (h == null) throw new InvalidOperationException("颜色目标已过期，请刷新对象列表。");
+                if (h == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("颜色目标已过期，请刷新对象列表。"));
                 int type = (int)h.Shape.Type;
-                if (type == 6 || type == 19) throw new InvalidOperationException("请进入组合或表格，选择具体对象或文字。");
+                if (type == 6 || type == 19) throw new InvalidOperationException(global::PptEase.Localization.L.T("请进入组合或表格，选择具体对象或文字。"));
                 targets.Add(new ColorTarget { Key = key, Kind = type == 17 ? "TextBoxFont" : type == 9 ? "Line" : "Fill" });
             }
             return targets;
@@ -237,13 +237,13 @@ namespace PptEase.Host
                 catch { }
                 try { item = item.Parent; } catch { break; }
             }
-            throw new InvalidOperationException("无法稳定定位这段文字所属对象；请先选择独立文本框。");
+            throw new InvalidOperationException(global::PptEase.Localization.L.T("无法稳定定位这段文字所属对象；请先选择独立文本框。"));
         }
 
         private ShapeHandle ResolveTarget(ColorTarget target)
         {
             ShapeHandle h = GetShapes().FirstOrDefault(x => x.Key == target.Key);
-            if (h == null) throw new InvalidOperationException("颜色目标已过期或页面已切换，请重新开始。");
+            if (h == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("颜色目标已过期或页面已切换，请重新开始。"));
             return h;
         }
 
@@ -253,9 +253,9 @@ namespace PptEase.Host
             foreach (ColorTarget target in targets)
             {
                 ShapeHandle h = all.FirstOrDefault(x => x.Key == target.Key);
-                if (h == null) throw new InvalidOperationException("颜色目标已失效，请刷新。");
-                if (all.Any(parent => (parent.Key == target.Key || target.Key.StartsWith(parent.Key + ":", StringComparison.Ordinal)) && ReadLocked(parent.Shape))) throw new InvalidOperationException("目标对象或父组已锁定；颜色工具不会自动解锁。");
-                if (target.Kind == "Fill" && (int)h.Shape.Fill.Type != 1) throw new InvalidOperationException("当前颜色工具支持纯色填充；渐变、图片或图案填充请用原生格式工具处理。");
+                if (h == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("颜色目标已失效，请刷新。"));
+                if (all.Any(parent => (parent.Key == target.Key || target.Key.StartsWith(parent.Key + ":", StringComparison.Ordinal)) && ReadLocked(parent.Shape))) throw new InvalidOperationException(global::PptEase.Localization.L.T("目标对象或父组已锁定；颜色工具不会自动解锁。"));
+                if (target.Kind == "Fill" && (int)h.Shape.Fill.Type != 1) throw new InvalidOperationException(global::PptEase.Localization.L.T("当前颜色工具支持纯色填充；渐变、图片或图案填充请用原生格式工具处理。"));
             }
         }
 
@@ -265,7 +265,7 @@ namespace PptEase.Host
             dynamic text = h.Shape.TextFrame.TextRange;
             if (target.Kind == "TextRange")
             {
-                if (target.Start < 1 || target.Length < 1 || target.Start + target.Length - 1 > (int)text.Length) throw new InvalidOperationException("文字内容长度已变化，请重新选择文字后取色。");
+                if (target.Start < 1 || target.Length < 1 || target.Start + target.Length - 1 > (int)text.Length) throw new InvalidOperationException(global::PptEase.Localization.L.T("文字内容长度已变化，请重新选择文字后取色。"));
                 return text.Characters(target.Start, target.Length);
             }
             return text;
@@ -273,8 +273,8 @@ namespace PptEase.Host
         private int ReadTargetColor(ShapeHandle h, ColorTarget target)
         {
             if (target.Kind == "TextRange" || target.Kind == "TextBoxFont") return (int)TextRange(h, target).Font.Color.RGB;
-            if (target.Kind == "Line") { if ((int)h.Shape.Line.Visible == 0) throw new InvalidOperationException("源线条没有可见颜色。"); return (int)h.Shape.Line.ForeColor.RGB; }
-            if ((int)h.Shape.Fill.Visible == 0 || (int)h.Shape.Fill.Type != 1) throw new InvalidOperationException("源对象没有可吸取的纯色填充。");
+            if (target.Kind == "Line") { if ((int)h.Shape.Line.Visible == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("源线条没有可见颜色。")); return (int)h.Shape.Line.ForeColor.RGB; }
+            if ((int)h.Shape.Fill.Visible == 0 || (int)h.Shape.Fill.Type != 1) throw new InvalidOperationException(global::PptEase.Localization.L.T("源对象没有可吸取的纯色填充。"));
             return (int)h.Shape.Fill.ForeColor.RGB;
         }
 
@@ -287,7 +287,7 @@ namespace PptEase.Host
             if (target.Kind == "TextRange" || target.Kind == "TextBoxFont")
             {
                 int color = (int)TextRange(h, target).Font.Color.RGB;
-                if (color < 0) throw new InvalidOperationException("目标文字包含混合颜色；请先缩小为颜色一致的片段，以保证失败时可完整恢复。");
+                if (color < 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("目标文字包含混合颜色；请先缩小为颜色一致的片段，以保证失败时可完整恢复。"));
                 return color;
             }
             return target.Kind == "Line" ? (int)h.Shape.Line.ForeColor.RGB : (int)h.Shape.Fill.ForeColor.RGB;
@@ -312,7 +312,7 @@ namespace PptEase.Host
                 {
                     attempted.Add(item);
                     WriteTargetColor(item.Handle, item.Target, rgb, null);
-                    if (ReadTargetColor(item.Handle, item.Target) != rgb) throw new InvalidOperationException("宿主未应用目标颜色。");
+                    if (ReadTargetColor(item.Handle, item.Target) != rgb) throw new InvalidOperationException(global::PptEase.Localization.L.T("宿主未应用目标颜色。"));
                 }
                 Log("color-write targets=" + originals.Count + " rgb=" + ToHex(rgb));
             }

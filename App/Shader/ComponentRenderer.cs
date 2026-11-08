@@ -27,7 +27,7 @@ public sealed class ComponentRenderer : IDisposable
             foreach (var texture in component.Textures) {
                 using var memory = new MemoryStream(Convert.FromBase64String(texture.Data));
                 var frame = BitmapDecoder.Create(memory, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames[0];
-                if (frame.PixelWidth > 2048 || frame.PixelHeight > 2048) throw new InvalidDataException("纹理尺寸超限。");
+                if (frame.PixelWidth > 2048 || frame.PixelHeight > 2048) throw new InvalidDataException(global::PptEase.Localization.L.T("纹理尺寸超限。"));
                 var converted = new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0);
                 byte[] pixels = new byte[converted.PixelWidth * converted.PixelHeight * 4]; converted.CopyPixels(pixels, converted.PixelWidth * 4, 0);
                 for (int i=0;i<pixels.Length;i+=4) (pixels[i],pixels[i+2])=(pixels[i+2],pixels[i]);
@@ -68,13 +68,13 @@ public sealed class ComponentRenderer : IDisposable
     }
     public void AttachGpuWindow(IntPtr hwnd)
     {
-        if(d3d==null)throw new InvalidOperationException("此入口仅用于 HLSL。");
+        if(d3d==null)throw new InvalidOperationException(global::PptEase.Localization.L.T("此入口仅用于 HLSL。"));
         d3d.AttachPresentationWindow(hwnd);
     }
     public void UpdateParameters(Dictionary<string,float> values) { component.Parameters=values; d3d?.UpdateParameters(values); }
     public void Present(double seconds)
     {
-        if(d3d==null)throw new InvalidOperationException("GPU 未初始化。");
+        if(d3d==null)throw new InvalidOperationException(global::PptEase.Localization.L.T("GPU 未初始化。"));
         d3d.PresentFrame((float)seconds,component.Parameters.TryGetValue("roughness",out var r)?r:.3f,false);
     }
     public long PresentedFrames => d3d?.PresentedFrames ?? 0;

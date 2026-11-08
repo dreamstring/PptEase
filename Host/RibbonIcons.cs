@@ -7,6 +7,7 @@ namespace PptEase.Host
     {
         private static string CompleteRibbonIcons(string xml)
         {
+            xml = global::PptEase.Localization.L.Ribbon(xml);
             // Let Office select and render its own DPI-specific image assets.
             // A fixed-size IPictureDisp is resampled by the Ribbon on high-DPI monitors.
             var icons = new Dictionary<string, string>

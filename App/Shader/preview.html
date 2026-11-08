@@ -1,9 +1,10 @@
 <!doctype html><html><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e9edf1}canvas{width:100%;height:100%;display:block}#error{position:absolute;inset:12px;white-space:pre-wrap;background:#fff8f2;color:#9c330f;font:12px/1.5 Consolas;padding:12px;display:none}</style><canvas id="canvas"></canvas><div id="error"></div>
 <script>
 (()=>{'use strict';
+const zh=document.documentElement.lang==='zh-CN';
 const canvas=document.querySelector('canvas'),error=document.querySelector('#error');
 const gl=canvas.getContext('webgl2',{preserveDrawingBuffer:true,alpha:false});
-if(!gl){error.style.display='block';error.textContent='WebGL 2 无法创建。请检查 WebView2 图形支持。';window.preview={selfTest:()=>({ok:false,error:error.textContent})};return;}
+if(!gl){error.style.display='block';error.textContent=(zh?'WebGL 2 无法创建。请检查 WebView2 图形支持。':'Could not create WebGL 2. Check WebView2 graphics support.');window.preview={selfTest:()=>({ok:false,error:error.textContent})};return;}
 let customTextures=[],customParameters={};
 let program,buffer,texture,time=0,roughness=.3,playing=false,disposed=false,frame=0,last=0,renderCount=0;
 const vertex='#version 300 es\nin vec2 position;void main(){gl_Position=vec4(position,0,1);}';
@@ -51,7 +52,7 @@ function configureBindings(parameters,textures){
 window.preview={diagnostics:()=>({time,playing,renderCount,scheduled:frame!==0}),compile,configureBindings,exportFrame:(state)=>{if(disposed||gl.isContextLost())throw Error("WebGL context unavailable");if(!Number.isInteger(state.width)||!Number.isInteger(state.height)||state.width<16||state.height<16||state.width>2048||state.height>2048)throw Error("Invalid frame dimensions");playing=false;syncLoop();time=state.time;roughness=state.roughness;render(state.width,state.height);return canvas.toDataURL("image/png").split(",")[1];},setState:(state)=>{if(typeof state.time==='number')time=state.time;if(typeof state.roughness==='number')roughness=state.roughness;if(typeof state.playing==='boolean')playing=state.playing;syncLoop();render();},defaultSource,
 selfTest:()=>{const oldTime=time,oldPlay=playing;playing=false;const valid=compile(defaultSource),first=read(0),next=read(1),repeat=read(0),invalid=compile('#version 300 es\nthis is invalid'),afterError=read(0);error.style.display='none';time=oldTime;playing=oldPlay;syncLoop();render();const debug=gl.getExtension('WEBGL_debug_renderer_info');return {ok:valid.ok&&first.nonzero&&first.hash!==next.hash&&first.hash===repeat.hash&&!invalid.ok&&afterError.hash===first.hash,validCompiled:valid.ok,invalidRejected:!invalid.ok,timeChangesPixels:first.hash!==next.hash,repeatDeterministic:first.hash===repeat.hash,oldShaderSurvives:first.hash===afterError.hash,glError:gl.getError(),renderer:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),hash0:first.hash,hash1:next.hash};},
 dispose:()=>{disposed=true;cancelAnimationFrame(frame);gl.deleteProgram(program);gl.deleteBuffer(buffer);gl.deleteTexture(texture);customTextures.forEach(t=>gl.deleteTexture(t.texture));}};
-canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();error.textContent='图形上下文已丢失。请切换后端后重试。';error.style.display='block';playing=false;syncLoop();});
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();error.textContent=(zh?'图形上下文已丢失。请切换后端后重试。':'Graphics context lost. Switch backend and retry.');error.style.display='block';playing=false;syncLoop();});
 window.preview.setLive=state=>{customParameters={...state.parameters};roughness=customParameters.roughness??.3;delete customParameters.roughness;time=state.time;playing=state.playing;syncLoop();render();};
 window.addEventListener('resize',()=>render());compile(defaultSource);
 })();

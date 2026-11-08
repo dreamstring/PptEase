@@ -27,7 +27,7 @@ namespace PptEase.Host
                 catch(Exception ex)
                 {
                     if(canvasError!=ex.Message){canvasError=ex.Message;Log("canvas-start: "+ex.Message);}
-                    if(ex.Message.Contains("版本")||ex.Message.Contains("校验"))canvasStartup.Stop();
+                    if(ex.Message.Contains(global::PptEase.Localization.L.T("版本"))||ex.Message.Contains(global::PptEase.Localization.L.T("校验")))canvasStartup.Stop();
                 }
             };
             canvasStartup.Start();

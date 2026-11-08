@@ -8,9 +8,9 @@ internal static class PowerPointProcessControl
     internal sealed record Target(int Id, long StartedUtcTicks);
     internal static string Open()
     {
-        if(Capture().Length>0)return "PowerPoint 已在运行。";
+        if(Capture().Length>0)return global::PptEase.Localization.L.T("PowerPoint 已在运行。");
         using var process=Process.Start(new ProcessStartInfo("powerpnt.exe") { UseShellExecute=true });
-        return "已请求打开 PowerPoint。";
+        return global::PptEase.Localization.L.T("已请求打开 PowerPoint。");
     }
     private delegate bool EnumWindow(IntPtr window, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindow callback, IntPtr parameter);
@@ -31,7 +31,7 @@ internal static class PowerPointProcessControl
     internal static async Task<string> RequestCloseAsync()
     {
         var targets = Capture();
-        if (targets.Length == 0) return "没有正在运行的 PowerPoint 进程。";
+        if (targets.Length == 0) return global::PptEase.Localization.L.T("没有正在运行的 PowerPoint 进程。");
         var ids = targets.Select(t => (uint)t.Id).ToHashSet();
         int windows = 0, failed = 0;
         EnumWindows((window, _) =>
@@ -47,10 +47,10 @@ internal static class PowerPointProcessControl
         }, IntPtr.Zero);
         await Task.Delay(1500);
         int remaining = Capture().Length;
-        if (remaining == 0) return "所有 PowerPoint 进程已退出。";
-        return $"已向 {windows} 个 PPT 窗口请求正常关闭，仍有 {remaining} 个进程。请先处理 PPT 的保存提示；若取消关闭，文稿会保持打开。" +
-            (failed > 0 ? $"另有 {failed} 个窗口未接受关闭请求。" : "") +
-            "确认不再需要未保存内容后，才使用“强制结束”。";
+        if (remaining == 0) return global::PptEase.Localization.L.T("所有 PowerPoint 进程已退出。");
+        return global::PptEase.Localization.L.F("已向 {0} 个 PPT 窗口请求正常关闭，仍有 {1} 个进程。请先处理 PPT 的保存提示；若取消关闭，文稿会保持打开。", (object)(windows), (object)(remaining)) +
+            (failed > 0 ? global::PptEase.Localization.L.F("另有 {0} 个窗口未接受关闭请求。", (object)(failed)) : "") +
+            global::PptEase.Localization.L.T("确认不再需要未保存内容后，才使用“强制结束”。");
     }
     internal static async Task<string> ForceCloseAsync(Target[] confirmedTargets)
     {
@@ -69,6 +69,6 @@ internal static class PowerPointProcessControl
             catch (Exception ex) { errors.Add($"PID {target.Id}：{ex.Message}"); }
         }
         await Task.Delay(800);
-        return $"已向 {ended} 个已确认的 PPT 进程发送结束请求；当前剩余 {Capture().Length} 个。" + (errors.Count == 0 ? "" : Environment.NewLine + string.Join(Environment.NewLine, errors));
+        return global::PptEase.Localization.L.F("已向 {0} 个已确认的 PPT 进程发送结束请求；当前剩余 {1} 个。", (object)(ended), (object)(Capture().Length)) + (errors.Count == 0 ? "" : Environment.NewLine + string.Join(Environment.NewLine, errors));
     }
 }

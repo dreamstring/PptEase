@@ -83,7 +83,7 @@ internal sealed class ShapeSliderWindow:Window,IDisposable
             control.numberX.Text="NaN";double previous=control.fraction;control.CommitNumber(control.numberX,false);numeric&=control.fraction==previous;
             control.canvas.UpdateLayout();
             var bitmap=new System.Windows.Media.Imaging.RenderTargetBitmap((int)control.Width,(int)control.Height,96,96,PixelFormats.Pbgra32);bitmap.Render(control.canvas);
-            var card=new StackPanel{Margin=new Thickness(16)};card.Children.Add(new TextBlock{Text=new[]{"滑块","圆盘 X / Y","方形 X / Y","复选框"}[kind]+" · "+new[]{"深色蓝","浅色蓝","石墨银","琥珀"}[theme],Foreground=Brushes.White,Margin=new Thickness(0,0,0,12)});card.Children.Add(new Image{Source=bitmap,Stretch=Stretch.None,HorizontalAlignment=HorizontalAlignment.Left});Grid.SetColumn(card,theme);Grid.SetRow(card,kind);gallery.Children.Add(card);
+            var card=new StackPanel{Margin=new Thickness(16)};card.Children.Add(new TextBlock{Text=new[]{global::PptEase.Localization.L.T("滑块"),global::PptEase.Localization.L.T("圆盘 X / Y"),global::PptEase.Localization.L.T("方形 X / Y"),global::PptEase.Localization.L.T("复选框")}[kind]+" · "+new[]{global::PptEase.Localization.L.T("深色蓝"),global::PptEase.Localization.L.T("浅色蓝"),global::PptEase.Localization.L.T("石墨银"),global::PptEase.Localization.L.T("琥珀")}[theme],Foreground=Brushes.White,Margin=new Thickness(0,0,0,12)});card.Children.Add(new Image{Source=bitmap,Stretch=Stretch.None,HorizontalAlignment=HorizontalAlignment.Left});Grid.SetColumn(card,theme);Grid.SetRow(card,kind);gallery.Children.Add(card);
             control.HideSurface();numeric&=control.pending==null&&control.pendingY==null;
         }
         gallery.Measure(new Size(1120,680));gallery.Arrange(new Rect(0,0,1120,680));gallery.UpdateLayout();
@@ -152,7 +152,7 @@ internal sealed class ShapeSliderWindow:Window,IDisposable
             crossX.Visibility=crossY.Visibility=pad?Visibility.Visible:Visibility.Hidden;crossX.Stroke=crossY.Stroke=line;
             crossX.X1=w*.15;crossX.X2=w*.85;crossX.Y1=crossX.Y2=h/2;crossY.Y1=h*.15;crossY.Y2=h*.85;crossY.X1=crossY.X2=w/2;
         }
-        numberX.ToolTip=pad?"X 轴数值 · Enter 应用，Esc 取消":"数值 · Enter 应用，Esc 取消";numberY.ToolTip="Y 轴数值 · Enter 应用，Esc 取消";
+        numberX.ToolTip=pad?global::PptEase.Localization.L.T("X 轴数值 · Enter 应用，Esc 取消"):global::PptEase.Localization.L.T("数值 · Enter 应用，Esc 取消");numberY.ToolTip=global::PptEase.Localization.L.T("Y 轴数值 · Enter 应用，Esc 取消");
         numberX.Visibility=showValue&&!checkbox?Visibility.Visible:Visibility.Collapsed;numberY.Visibility=showValue&&pad?Visibility.Visible:Visibility.Collapsed;
         foreach(var field in new[]{numberX,numberY}){field.Background=bg;field.Foreground=preset==1?Brushes.Black:Brushes.White;field.BorderBrush=line;Canvas.SetLeft(field,w+8);}
         Canvas.SetTop(numberX,Math.Max(0,(h-(pad?62:28))/2));Canvas.SetTop(numberY,Math.Max(0,(h-62)/2)+34);
@@ -184,7 +184,7 @@ internal sealed class ShapeSliderWindow:Window,IDisposable
         if(right<=left||bottom<=top){HideSurface();return;}if(showValue){right+=(int)Math.Ceiling(76/transform.M11);bottom=Math.Max(bottom,32);if(GetWindowRect(owner,out var ownerRect)){right=Math.Min(right,ownerRect.Right-p.GetProperty("X").GetInt32());bottom=Math.Min(bottom,ownerRect.Bottom-p.GetProperty("Y").GetInt32());}}
         IntPtr region=CreateRectRgn(left,top,right,bottom);if(circular&&!showValue){IntPtr ellipse=CreateEllipticRgn(0,0,p.GetProperty("Width").GetInt32(),p.GetProperty("Height").GetInt32());CombineRgn(region,region,ellipse,1);DeleteObject(ellipse);}if(SetWindowRgn(hwnd,region,true)==0)DeleteObject(region);
         DrawThumb();if(!visible){ShowNative(hwnd,8);visible=true;}
-        ToolTip="参数 "+spec.GetProperty("Parameter").GetString()+"："+(min+(max-min)*fraction).ToString("0.###")+(pad?" / "+spec.GetProperty("ParameterY").GetString()+"："+(minY+(maxY-minY)*fractionY).ToString("0.###"):"");
+        ToolTip=global::PptEase.Localization.L.T("参数 ")+spec.GetProperty("Parameter").GetString()+"："+(min+(max-min)*fraction).ToString("0.###")+(pad?" / "+spec.GetProperty("ParameterY").GetString()+"："+(minY+(maxY-minY)*fractionY).ToString("0.###"):"");
     }
     public void HideSurface(){if(canvas.IsMouseCaptured)canvas.ReleaseMouseCapture();dragging=false;pending=null;pendingY=null;if(visible){ShowNative(hwnd,0);visible=false;}}
     public void Dispose(){if(disposed)return;disposed=true;send.Stop();HideSurface();inputWindows.Remove(hwnd);Close();}

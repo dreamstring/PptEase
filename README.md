@@ -39,3 +39,57 @@ Windows PowerPoint 增强工具：排版辅助、原生取色、自由画布、G
 - [交互控件](docs/Shape-Slider.md)
 
 本仓库不包含 Office 二进制、本机日志、旧测试输出或凭据。尚未指定开源许可证，不等于授予第三方开源使用许可。
+
+## 界面语言
+
+支持中文和英文，随 PowerPoint 的显示语言启动；其他语言暂回退英文。功能区、动态菜单、管理器、Shader Studio 和操作提示共用语言资源。独立启动时优先读取已加载的 PPT 宿主，其次读取 Office 语言设置，最后使用系统界面语言。切换 Office 显示语言后，请重启 PPT 和独立窗口。
+
+文稿内容、字体名称、Shader 源码及参数标识不会翻译。所有 Markdown 文档按中文在前、英文在后排列。开发测试可用环境变量 `PPTEASE_UI_LANGUAGE=zh-CN` 或 `en` 指定界面语言。
+
+---
+
+# English
+
+PptEase enhances Windows PowerPoint with layout tools, the native eyedropper, a free-canvas mode, GPU shaders, and interactive slideshow controls.
+
+[Download the single-slide graffiti sample](Samples/Graffiti/Graffiti-Sample.pptx?raw=true). This is the author's personal artwork, shared separately to demonstrate shader playback and controls. It is not a plugin feature or built-in asset library. Rights remain with the author; public availability does not grant permission to copy, adapt, or use the artwork commercially.
+
+## Usage
+
+Download and fully extract the standalone release ZIP. Run `PptEase.exe`, choose Install / Repair (安装 / 修复), save your presentations, and restart PowerPoint. Open the PPT 增强 tab. Windows x64 and 64-bit desktop PowerPoint are required. The GLSL backend also requires WebView2 Runtime. The package includes the .NET 9 runtime, but not Office.
+
+## Build
+
+Install the .NET 9 SDK. The COM host uses the .NET Framework 4.x compiler supplied with Windows.
+
+```powershell
+./build.ps1
+./Host/test-ribbon.ps1
+```
+
+The output is `publish/PptEase.exe`. Development builds and standalone releases use the same source project.
+
+## Features and limitations
+
+- Context-aware native eyedropper for text, shapes, and lines.
+- Tighten text boxes, list document fonts, save document colors as theme colors, and read template styles dynamically.
+- Generate ordinary slide shapes from marked master/layout objects. Currently limited to ordinary opaque, solid-color shapes.
+- Free canvas uses internal Office interfaces and input handling. Only hash-verified Office builds are supported; extreme boundaries and guide synchronization remain limited.
+- Shader Studio supports HLSL / GLSL, draft previews, textures, parameters, and persistence in PPTX.
+- Grouped sliders, disks, square X/Y pads, and checkboxes are interactive during preview/slideshow and editable as layout objects otherwise. No VBA or ActiveX is required.
+- Shader playback and control dragging have been manually verified. Complex occlusion, rotation, animation, and multiple displays remain limited; shader components are not fully equivalent to native objects.
+- Lock/unlock commands remain available. Click-through selection of locked objects is not complete.
+
+## Documentation
+
+- [Architecture](docs/Architecture.md#english)
+- [Shader Studio](docs/Shader-Studio.md#english)
+- [Interactive controls](docs/Shape-Slider.md#english)
+
+The repository excludes Office binaries, local logs, old test outputs, and credentials. No open-source license has been specified; public access does not itself grant an open-source license.
+
+## Interface language
+
+Chinese and English UI are supported. PptEase follows PowerPoint's display language at startup; other languages fall back to English. Ribbon commands, dynamic menus, the manager, Shader Studio and operation messages share the same resources. Standalone launches prefer the connected PPT host, then Office language settings, then the system UI language. Restart PowerPoint and standalone windows after changing Office's display language.
+
+Presentation content, font names, Shader source and parameter identifiers are never translated. Markdown documentation is Chinese first, followed by English. For development testing, set `PPTEASE_UI_LANGUAGE` to `zh-CN` or `en`.

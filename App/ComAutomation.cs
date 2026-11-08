@@ -34,7 +34,7 @@ internal static class ComAutomation
                 addins.Update();
                 dynamic addin = addinObject = addins.Item(progId);
                 addin.Connect = connected;
-                if ((bool)addin.Connect != connected) throw new InvalidOperationException("PowerPoint 没有接受加载状态，请查看诊断日志。");
+                if ((bool)addin.Connect != connected) throw new InvalidOperationException(global::PptEase.Localization.L.T("PowerPoint 没有接受加载状态，请查看诊断日志。"));
                 return true;
             }
             finally

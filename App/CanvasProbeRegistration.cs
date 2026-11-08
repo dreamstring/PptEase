@@ -27,13 +27,13 @@ internal static class CanvasProbeRegistration
         Directory.CreateDirectory(folder);
         var target = Path.Combine(folder, "PptEase.CanvasInputV3.dll");
         if (!File.Exists(target)) File.Copy(source, target);
-        if (!SHA256.HashData(File.ReadAllBytes(source)).SequenceEqual(SHA256.HashData(File.ReadAllBytes(target)))) throw new IOException("画布预览模块校验失败。");
+        if (!SHA256.HashData(File.ReadAllBytes(source)).SequenceEqual(SHA256.HashData(File.ReadAllBytes(target)))) throw new IOException(global::PptEase.Localization.L.T("画布预览模块校验失败。"));
         var identity = AssemblyName.GetAssemblyName(target);
         using var root = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
         foreach (var path in Keys)
         {
             using var key = root.OpenSubKey(path);
-            if (key != null && Convert.ToInt32(key.GetValue("PptEaseOwned", 0)) != 1) throw new InvalidOperationException("同名画布注册项不属于本软件，已停止。");
+            if (key != null && Convert.ToInt32(key.GetValue("PptEaseOwned", 0)) != 1) throw new InvalidOperationException(global::PptEase.Localization.L.T("同名画布注册项不属于本软件，已停止。"));
         }
         using (var key = root.CreateSubKey(Keys[0])) { key.SetValue("PptEaseOwned", 1); using var cls = key.CreateSubKey("CLSID"); cls.SetValue("", ClassId); }
         using (var key = root.CreateSubKey(Keys[1]))
@@ -48,11 +48,11 @@ internal static class CanvasProbeRegistration
             }
             key.CreateSubKey(@"Implemented Categories\{62C8FE65-4EBB-45E7-B440-6E39B2CDBF29}").Dispose();
         }
-        using (var key = root.CreateSubKey(Keys[2])) { key.SetValue("PptEaseOwned", 1); key.SetValue("FriendlyName", "PPT 增强·画布越界预览"); key.SetValue("Description", "用户触发的视口越界预览模块"); key.SetValue("LoadBehavior", 0); }
+        using (var key = root.CreateSubKey(Keys[2])) { key.SetValue("PptEaseOwned", 1); key.SetValue("FriendlyName", global::PptEase.Localization.L.T("PPT 增强·画布越界预览")); key.SetValue("Description", global::PptEase.Localization.L.T("用户触发的视口越界预览模块")); key.SetValue("LoadBehavior", 0); }
         await ComAutomation.SetAddinConnectedAsync(true, ProgId);
         var loaded = await new HostClient("PptEaseCanvasV3").RequestAsync("status");
         if (loaded.GetProperty("HostBuild").GetString() != expectedBuild || loaded.GetProperty("Backend").GetString() != "native-canvas-input-v3")
-            throw new InvalidOperationException("PPT 仍驻留旧画布模块。请保存并完全退出 PPT 后再试。");
+            throw new InvalidOperationException(global::PptEase.Localization.L.T("PPT 仍驻留旧画布模块。请保存并完全退出 PPT 后再试。"));
     }
     internal static async Task RemoveAsync()
     {

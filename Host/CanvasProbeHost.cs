@@ -82,12 +82,12 @@ namespace PptEase.CanvasInputV3
                                             else if(op=="disableCanvasInput") result=input.Disable();
                                             else if(op=="inspectCanvas") result=PptEase.Host.NativeCanvasBridge.PanCanvas(app,0,0,true);
                                             else if(op=="panCanvas") {var payload=(Dictionary<string,object>)request["payload"];result=PptEase.Host.NativeCanvasBridge.PanCanvas(app,Convert.ToInt32(payload["dx"]),Convert.ToInt32(payload["dy"]));}
-                                            else throw new InvalidOperationException("未知画布命令。");
+                                            else throw new InvalidOperationException(global::PptEase.Localization.L.T("未知画布命令。"));
                                         }
                                         catch(Exception ex){failure=ex;}
                                         finally {try{done.Set();}catch(ObjectDisposedException){}}
                                     });
-                                    if(!done.Wait(10000)){Interlocked.Exchange(ref canceled,1);throw new TimeoutException("PPT未及时响应；请回到编辑视图后再试。");}
+                                    if(!done.Wait(10000)){Interlocked.Exchange(ref canceled,1);throw new TimeoutException(global::PptEase.Localization.L.T("PPT未及时响应；请回到编辑视图后再试。"));}
                                 }
                                 if(failure!=null)throw failure;
                                 writer.WriteLine(json.Serialize(new{id,ok=true,result,error=(string)null}));
@@ -102,7 +102,7 @@ namespace PptEase.CanvasInputV3
         }
         private static string ReadLine(TextReader reader)
         {
-            var b=new StringBuilder();int c;while((c=reader.Read())!=-1){if(c=='\n')return b.ToString();if(c!='\r')b.Append((char)c);if(b.Length>16384)throw new InvalidOperationException("画布请求过长。");}return b.Length==0?null:b.ToString();
+            var b=new StringBuilder();int c;while((c=reader.Read())!=-1){if(c=='\n')return b.ToString();if(c!='\r')b.Append((char)c);if(b.Length>16384)throw new InvalidOperationException(global::PptEase.Localization.L.T("画布请求过长。"));}return b.Length==0?null:b.ToString();
         }
     }
 }

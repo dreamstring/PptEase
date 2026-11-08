@@ -14,14 +14,14 @@ public sealed class CanvasLabWindow : Window
     private bool cleanupDone;
     public CanvasLabWindow()
     {
-        Title = "PPT 自由画布 · V3";
+        Title = global::PptEase.Localization.L.T("PPT 自由画布 · V3");
         Width = 780; Height = 430;
         var panel = new DockPanel { Margin = new Thickness(20) };
-        var intro = new TextBlock { Text = "先点“启用画布接管”，再回 PPT：空格＋左键或中键拖动；滚轮平移，Shift＋滚轮横移，Ctrl＋滚轮以鼠标位置缩放。接管仅限编辑画布。关闭本窗口会停用。", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) };
+        var intro = new TextBlock { Text = global::PptEase.Localization.L.T("先点“启用画布接管”，再回 PPT：空格＋左键或中键拖动；滚轮平移，Shift＋滚轮横移，Ctrl＋滚轮以鼠标位置缩放。接管仅限编辑画布。关闭本窗口会停用。"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) };
         DockPanel.SetDock(intro, Dock.Top); panel.Children.Add(intro);
         DockPanel.SetDock(buttons, Dock.Top); panel.Children.Add(buttons);
-        Add("读取视口", "read"); Add("向负坐标越界", "negative"); Add("向正坐标越界", "positive"); Add("居中适配", "fit");
-        Add("启用画布接管", "enableCanvasInput"); Add("停用画布接管", "disableCanvasInput"); Add("接管状态", "status");
+        Add(global::PptEase.Localization.L.T("读取视口"), "read"); Add(global::PptEase.Localization.L.T("向负坐标越界"), "negative"); Add(global::PptEase.Localization.L.T("向正坐标越界"), "positive"); Add(global::PptEase.Localization.L.T("居中适配"), "fit");
+        Add(global::PptEase.Localization.L.T("启用画布接管"), "enableCanvasInput"); Add(global::PptEase.Localization.L.T("停用画布接管"), "disableCanvasInput"); Add(global::PptEase.Localization.L.T("接管状态"), "status");
         panel.Children.Add(log); Content = panel;
     }
     private void Add(string text, string operation)
@@ -69,7 +69,7 @@ public sealed class CanvasLabWindow : Window
     {
         dynamic app = ComAutomation.GetPowerPoint();
         dynamic window = app.ActiveWindow;
-        if ((int)window.ViewType != 9 && (int)window.ViewType != 1) throw new InvalidOperationException("请切换到普通编辑视图。");
+        if ((int)window.ViewType != 9 && (int)window.ViewType != 1) throw new InvalidOperationException(global::PptEase.Localization.L.T("请切换到普通编辑视图。"));
         dynamic slide = window.View.Slide;
         int beforeSlide = (int)slide.SlideID;
         float x0 = (float)window.PointsToScreenPixelsX(0), y0 = (float)window.PointsToScreenPixelsY(0);

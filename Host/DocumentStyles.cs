@@ -10,7 +10,7 @@ namespace PptEase.Host
 {
     public sealed partial class Connect
     {
-        private static readonly string[] ThemeNames = { "深色 1", "浅色 1", "深色 2", "浅色 2", "强调色 1", "强调色 2", "强调色 3", "强调色 4", "强调色 5", "强调色 6", "超链接", "已访问链接" };
+        private static string[] ThemeNames { get { return new string[] { global::PptEase.Localization.L.T("深色 1"), global::PptEase.Localization.L.T("浅色 1"), global::PptEase.Localization.L.T("深色 2"), global::PptEase.Localization.L.T("浅色 2"), global::PptEase.Localization.L.T("强调色 1"), global::PptEase.Localization.L.T("强调色 2"), global::PptEase.Localization.L.T("强调色 3"), global::PptEase.Localization.L.T("强调色 4"), global::PptEase.Localization.L.T("强调色 5"), global::PptEase.Localization.L.T("强调色 6"), global::PptEase.Localization.L.T("超链接"), global::PptEase.Localization.L.T("已访问链接") }; } }
         public void TightenTextBoxes(object control)
         {
             RibbonAction(delegate
@@ -30,14 +30,14 @@ namespace PptEase.Host
                 {
                     if ((int)s.Type != 17 && (int)s.Type != 14) continue;
                     if ((int)s.HasTextFrame == 0 || (int)s.TextFrame2.HasText == 0) continue;
-                    if (ReadLocked(s)) throw new InvalidOperationException("请先解锁所选文本框。");
+                    if (ReadLocked(s)) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先解锁所选文本框。"));
                     if (Math.Abs((double)s.Rotation) > 0.01 || (int)s.TextFrame2.Orientation != 1)
-                        throw new InvalidOperationException("当前先支持未旋转的横排文本框，请单独选择。");
+                        throw new InvalidOperationException(global::PptEase.Localization.L.T("当前先支持未旋转的横排文本框，请单独选择。"));
                     if ((int)s.TextFrame2.AutoSize == 2)
-                        throw new InvalidOperationException("选区包含自动缩小文字的文本框，请先关闭文字自动缩小，再收紧，以免字号变化。");
+                        throw new InvalidOperationException(global::PptEase.Localization.L.T("选区包含自动缩小文字的文本框，请先关闭文字自动缩小，再收紧，以免字号变化。"));
                     eligible.Add((object)s);
                 }
-                if (eligible.Count == 0) throw new InvalidOperationException("请先选择有文字的文本框或文字占位符。");
+                if (eligible.Count == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择有文字的文本框或文字占位符。"));
                 app.StartNewUndoEntry();
                 try
                 {
@@ -59,7 +59,7 @@ namespace PptEase.Host
                         // Preserve the visible text position, including centered/right aligned text.
                         s.Left = (float)s.Left + textLeft - (float)frame.TextRange.BoundLeft;
                         s.Top = (float)s.Top + textTop - (float)frame.TextRange.BoundTop;
-                        if ((int)frame.TextRange.Lines().Count != lines) throw new InvalidOperationException("收紧改变了换行，本次操作已回退。");
+                        if ((int)frame.TextRange.Lines().Count != lines) throw new InvalidOperationException(global::PptEase.Localization.L.T("收紧改变了换行，本次操作已回退。"));
                         s.LockAspectRatio = aspect;
                     }
                 }
@@ -146,7 +146,7 @@ namespace PptEase.Host
             string tag = (string)c.Tag;
             int separator = tag.IndexOf('|');
             if (separator < 0 || tag.Substring(0, separator) != Identity((object)app.ActivePresentation))
-                throw new InvalidOperationException("文稿已切换，请重新展开菜单。");
+                throw new InvalidOperationException(global::PptEase.Localization.L.T("文稿已切换，请重新展开菜单。"));
             return tag.Substring(separator + 1);
         }
 
@@ -170,17 +170,17 @@ namespace PptEase.Host
         private List<object> SelectedStyleShapes()
         {
             dynamic sel = app.ActiveWindow.Selection;
-            if ((int)sel.Type != 2) throw new InvalidOperationException("请先选择文字、文本框或形状。");
+            if ((int)sel.Type != 2) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择文字、文本框或形状。"));
             var result = new List<object>();
             for (int i = 1; i <= (int)sel.ShapeRange.Count; i++)
             {
                 dynamic root = sel.ShapeRange.Item(i);
-                if (ReadLocked(root)) throw new InvalidOperationException("选区包含锁定对象，请先解锁。");
+                if (ReadLocked(root)) throw new InvalidOperationException(global::PptEase.Localization.L.T("选区包含锁定对象，请先解锁。"));
                 VisitStyleShape((object)root, result.Add);
             }
             foreach (dynamic shape in result)
             {
-                try { if ((int)shape.Locked != 0) throw new InvalidOperationException("选区包含锁定对象，请先解锁。"); }
+                try { if ((int)shape.Locked != 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("选区包含锁定对象，请先解锁。")); }
                 catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
             }
             return result;
@@ -195,13 +195,13 @@ namespace PptEase.Host
                 dynamic p = app.ActivePresentation;
                 for (int i = 1; i <= (int)p.Fonts.Count; i++)
                     if ((string)p.Fonts.Item(i).Name == font) { exists = true; break; }
-                if (!exists) throw new InvalidOperationException("字体列表已变化，请重新展开菜单。");
+                if (!exists) throw new InvalidOperationException(global::PptEase.Localization.L.T("字体列表已变化，请重新展开菜单。"));
                 dynamic sel = app.ActiveWindow.Selection;
                 var ranges = new List<object>();
                 if ((int)sel.Type == 3) ranges.Add((object)sel.TextRange);
                 else foreach (dynamic shape in SelectedStyleShapes())
                     if ((int)shape.HasTextFrame != 0) ranges.Add((object)shape.TextFrame.TextRange);
-                if (ranges.Count == 0) throw new InvalidOperationException("选区没有可设置字体的文字。");
+                if (ranges.Count == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("选区没有可设置字体的文字。"));
                 app.StartNewUndoEntry();
                 foreach (dynamic range in ranges) { range.Font.Name = font; range.Font.NameFarEast = font; }
             });
@@ -212,7 +212,7 @@ namespace PptEase.Host
             RibbonAction(delegate
             {
                 int slot = Int32.Parse(DocumentStyleTag(control));
-                if (slot < 1 || slot > 12) throw new InvalidOperationException("主题颜色已失效。");
+                if (slot < 1 || slot > 12) throw new InvalidOperationException(global::PptEase.Localization.L.T("主题颜色已失效。"));
                 dynamic sel = app.ActiveWindow.Selection;
                 // Explicit theme colors; avoid slide-dependent Text/Background aliases.
                 int[] objectSlots = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
@@ -346,7 +346,7 @@ namespace PptEase.Host
                 dynamic p = app.ActivePresentation;
                 var colors = CollectDocumentColors();
                 int[] palette = BuildDocumentThemePalette(colors);
-                if (palette.Length == 0) throw new InvalidOperationException("文稿中未找到可读取的文字、形状或渐变颜色。");
+                if (palette.Length == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("文稿中未找到可读取的文字、形状或渐变颜色。"));
                 var schemes = new List<object>();
                 var originals = new List<int[]>();
                 for (int i = 1; i <= (int)p.Designs.Count; i++)
@@ -369,7 +369,7 @@ namespace PptEase.Host
                     throw;
                 }
                 if (ribbon != null) ribbon.InvalidateControl("peThemeColors");
-                MessageBox.Show("已保存 " + Math.Min(colors.Count, 12) + " 种文档颜色，已替换全部主题槽位。" + (colors.Count > 12 ? "文稿颜色超过主题的12个槽位，已按出现次数选取前12种。" : "不足12种时使用文档颜色填满剩余槽位，菜单自动去重。") + "\n已使用主题色的对象会随主题更新；请保存文稿保留设置。", "PPT 增强", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(global::PptEase.Localization.L.T("已保存 ") + Math.Min(colors.Count, 12) + global::PptEase.Localization.L.T(" 种文档颜色，已替换全部主题槽位。") + (colors.Count > 12 ? global::PptEase.Localization.L.T("文稿颜色超过主题的12个槽位，已按出现次数选取前12种。") : global::PptEase.Localization.L.T("不足12种时使用文档颜色填满剩余槽位，菜单自动去重。")) + global::PptEase.Localization.L.T("\n已使用主题色的对象会随主题更新；请保存文稿保留设置。"), global::PptEase.Localization.L.T("PPT 增强"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             });
         }
     }

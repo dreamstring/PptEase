@@ -103,16 +103,16 @@ namespace PptEase.Host
                 dynamic c = control;
                 string[] key = ((string)c.Tag).Split(':');
                 dynamic slide = FindTemplateSlide();
-                if (key.Length != 3 || key[2] != Identity((object)app.ActivePresentation) || slide == null || Convert.ToString((int)slide.SlideID) != key[0]) throw new InvalidOperationException("模板页已变化，请重新展开菜单。");
+                if (key.Length != 3 || key[2] != Identity((object)app.ActivePresentation) || slide == null || Convert.ToString((int)slide.SlideID) != key[0]) throw new InvalidOperationException(global::PptEase.Localization.L.T("模板页已变化，请重新展开菜单。"));
                 dynamic source = null;
                 for (int i = 1; i <= (int)slide.Shapes.Count; i++)
                 {
                     dynamic candidate = slide.Shapes.Item(i);
                     if (Convert.ToString((int)candidate.Id) == key[1]) { source = candidate; break; }
                 }
-                if (source == null) throw new InvalidOperationException("模板对象已删除，请重新展开菜单。");
+                if (source == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("模板对象已删除，请重新展开菜单。"));
                 dynamic selection = app.ActiveWindow.Selection;
-                if ((int)selection.Type != 2) throw new InvalidOperationException("请先选择要应用完整样式的图形或文本框。");
+                if ((int)selection.Type != 2) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择要应用完整样式的图形或文本框。"));
                 var targets = new List<object>();
                 for (int i = 1; i <= (int)selection.ShapeRange.Count; i++) targets.Add((object)selection.ShapeRange.Item(i));
                 app.StartNewUndoEntry();

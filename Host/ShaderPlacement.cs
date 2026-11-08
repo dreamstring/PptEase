@@ -13,14 +13,14 @@ namespace PptEase.Host
             try
             {
                 dynamic shape=handle.Shape;
-                if((int)shape.Visible==0)return new{Visible=false,Reason="组件已隐藏，保留原生隐藏状态"};
+                if((int)shape.Visible==0)return new{Visible=false,Reason=global::PptEase.Localization.L.T("组件已隐藏，保留原生隐藏状态")};
                 if((handle.Depth!=0&&!control) || Math.Abs((double)shape.Rotation)>.01 || (int)shape.HorizontalFlip!=0 || (int)shape.VerticalFlip!=0)
-                    return new { Visible=false, Reason="组合、旋转或翻转组件使用静态封面" };
+                    return new { Visible=false, Reason=global::PptEase.Localization.L.T("组合、旋转或翻转组件使用静态封面") };
                 if(control&&handle.Depth>0){
                     foreach(var ancestor in shapes){
                         if(ancestor.Depth>=handle.Depth||!handle.Key.StartsWith(ancestor.Key+":"))continue;
                         dynamic group=ancestor.Shape;
-                        if((int)group.Visible==0||Math.Abs((double)group.Rotation)>.01||(int)group.HorizontalFlip!=0||(int)group.VerticalFlip!=0)return new{Visible=false,Reason="控件组隐藏、旋转或翻转，保留静态外观"};
+                        if((int)group.Visible==0||Math.Abs((double)group.Rotation)>.01||(int)group.HorizontalFlip!=0||(int)group.VerticalFlip!=0)return new{Visible=false,Reason=global::PptEase.Localization.L.T("控件组隐藏、旋转或翻转，保留静态外观")};
                     }
                 }
                 dynamic window=presenting ? app.SlideShowWindows.Item(1) : app.ActiveWindow;
@@ -28,7 +28,7 @@ namespace PptEase.Host
                 // Office exposes no per-frame animation transform. Never paint over an
                 // entrance/exit/motion effect with a stationary live window.
                 if(presenting && ((int)slide.TimeLine.MainSequence.Count>0 || (int)slide.TimeLine.InteractiveSequences.Count>0))
-                    return new { Visible=false, Reason="含对象动画的放映页使用原生静态封面" };
+                    return new { Visible=false, Reason=global::PptEase.Localization.L.T("含对象动画的放映页使用原生静态封面") };
                 double left=(double)shape.Left,top=(double)shape.Top,width=(double)shape.Width,height=(double)shape.Height;
                 int z=(int)shape.ZOrderPosition;
                 foreach(var other in shapes)
@@ -43,7 +43,7 @@ namespace PptEase.Host
                     double radius=Math.Sqrt(uw*uw+uh*uh)/2;
                     if(Math.Abs((double)upper.Rotation)>.01){ul+=uw/2-radius;ut+=uh/2-radius;uw=uh=2*radius;}
                     if(ul<left+width && ul+uw>left && ut<top+height && ut+uh>top)
-                        return new { Visible=false, Reason="上层对象与组件重叠，保留原生层级并显示静态封面" };
+                        return new { Visible=false, Reason=global::PptEase.Localization.L.T("上层对象与组件重叠，保留原生层级并显示静态封面") };
                 }
                 long owner=0;
                 double x,y,sx,sy;int cl,ct,cr,cb;
@@ -51,7 +51,7 @@ namespace PptEase.Host
                 {
                     owner=ResolveShaderWindow(window,true,0,0).ToInt64();
                     ShaderRect rect;ShaderPoint origin=new ShaderPoint();
-                    if(!ShaderGetClientRect(new IntPtr(owner),out rect)||!ShaderClientToScreen(new IntPtr(owner),ref origin))throw new InvalidOperationException("无法读取放映窗口");
+                    if(!ShaderGetClientRect(new IntPtr(owner),out rect)||!ShaderClientToScreen(new IntPtr(owner),ref origin))throw new InvalidOperationException(global::PptEase.Localization.L.T("无法读取放映窗口"));
                     double sw=(double)window.Presentation.PageSetup.SlideWidth,sh=(double)window.Presentation.PageSetup.SlideHeight;
                     sx=sy=Math.Min((rect.Right-rect.Left)/sw,(rect.Bottom-rect.Top)/sh);
                     x=origin.X+((rect.Right-rect.Left)-sw*sx)/2;y=origin.Y+((rect.Bottom-rect.Top)-sh*sy)/2;
@@ -65,13 +65,13 @@ namespace PptEase.Host
                     owner=ResolveShaderWindow(window,false,cl+(cr-cl)/2,ct+(cb-ct)/2).ToInt64();
                 }
                 int px=(int)Math.Round(x+left*sx),py=(int)Math.Round(y+top*sy),pw=(int)Math.Round(width*sx),ph=(int)Math.Round(height*sy);
-                if(pw<1||ph<1||pw>32768||ph>32768)return new {Visible=false,Reason="组件屏幕尺寸无效"};
-                if(px>=cr||py>=cb||px+pw<=cl||py+ph<=ct)return new{Visible=false,Reason="组件位于当前视口之外"};
+                if(pw<1||ph<1||pw>32768||ph>32768)return new {Visible=false,Reason=global::PptEase.Localization.L.T("组件屏幕尺寸无效")};
+                if(px>=cr||py>=cb||px+pw<=cl||py+ph<=ct)return new{Visible=false,Reason=global::PptEase.Localization.L.T("组件位于当前视口之外")};
                 IntPtr root=ShaderGetAncestor(new IntPtr(owner),2);
-                return new { Visible=true, Reason="GPU 窗口原位呈现", Owner=root==IntPtr.Zero?owner:root.ToInt64(), X=px,Y=py,Width=pw,Height=ph,
+                return new { Visible=true, Reason=global::PptEase.Localization.L.T("GPU 窗口原位呈现"), Owner=root==IntPtr.Zero?owner:root.ToInt64(), X=px,Y=py,Width=pw,Height=ph,
                     ClipLeft=Math.Max(0,cl-px),ClipTop=Math.Max(0,ct-py),ClipRight=Math.Min(pw,cr-px),ClipBottom=Math.Min(ph,cb-py) };
             }
-            catch(Exception ex){return new {Visible=false,Reason="原位预览暂不可用："+ex.Message};}
+            catch(Exception ex){return new {Visible=false,Reason=global::PptEase.Localization.L.T("原位预览暂不可用：")+ex.Message};}
         }
         private static IntPtr ResolveShaderWindow(dynamic window,bool presenting,int centerX,int centerY)
         {
@@ -106,7 +106,7 @@ namespace PptEase.Host
                 IntPtr active=ShaderGetAncestor(ShaderActiveWindow(),2);
                 if(matching.Contains(active))return active;
             }
-            throw new InvalidOperationException("无法唯一定位 PowerPoint "+(presenting?"放映":"编辑")+"窗口");
+            throw new InvalidOperationException(global::PptEase.Localization.L.T("无法唯一定位 PowerPoint ")+(presenting?global::PptEase.Localization.L.T("放映"):global::PptEase.Localization.L.T("编辑"))+global::PptEase.Localization.L.T("窗口"));
         }
         private delegate bool ShaderEnumCallback(IntPtr hwnd,IntPtr parameter);
         [DllImport("user32.dll",EntryPoint="EnumWindows")]private static extern bool ShaderEnumWindows(ShaderEnumCallback callback,IntPtr parameter);

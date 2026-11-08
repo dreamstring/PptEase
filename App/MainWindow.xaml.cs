@@ -40,21 +40,21 @@ public partial class MainWindow : Window
         var selectedKeys = SelectedShapes.Select(s => s.Key).ToHashSet();
         _hostConnected = snapshot.Connected;
         _integrationLoaded = snapshot.IntegrationLoaded;
-        ConnectionText.Text = snapshot.IntegrationLoaded ? "已连接 PowerPoint" : snapshot.Connected ? "PowerPoint 已运行 · 增强未加载" : "尚未连接 PowerPoint";
+        ConnectionText.Text = snapshot.IntegrationLoaded ? global::PptEase.Localization.L.T("已连接 PowerPoint") : snapshot.Connected ? global::PptEase.Localization.L.T("PowerPoint 已运行 · 增强未加载") : global::PptEase.Localization.L.T("尚未连接 PowerPoint");
         ConnectionDot.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(snapshot.IntegrationLoaded ? "#4C8C61" : snapshot.Connected ? "#B88635" : "#9AA3AD"));
-        PresentationLabel.Text = string.IsNullOrWhiteSpace(snapshot.PresentationName) ? "打开 PowerPoint 后点击刷新" : snapshot.PresentationName;
-        SlideLabel.Text = snapshot.SlideIndex > 0 ? $"第 {snapshot.SlideIndex} 页 · 当前活动幻灯片" : "尚无活动幻灯片";
-        HostVersionLabel.Text = snapshot.Connected ? snapshot.HostVersion : "未连接";
-        IntegrationLabel.Text = snapshot.IntegrationLoaded ? "已加载" : "尚未加载";
+        PresentationLabel.Text = string.IsNullOrWhiteSpace(snapshot.PresentationName) ? global::PptEase.Localization.L.T("打开 PowerPoint 后点击刷新") : snapshot.PresentationName;
+        SlideLabel.Text = snapshot.SlideIndex > 0 ? global::PptEase.Localization.L.F("第 {0} 页 · 当前活动幻灯片", (object)(snapshot.SlideIndex)) : global::PptEase.Localization.L.T("尚无活动幻灯片");
+        HostVersionLabel.Text = snapshot.Connected ? snapshot.HostVersion : global::PptEase.Localization.L.T("未连接");
+        IntegrationLabel.Text = snapshot.IntegrationLoaded ? global::PptEase.Localization.L.T("已加载") : global::PptEase.Localization.L.T("尚未加载");
         PickColorButton.IsEnabled = snapshot.IntegrationLoaded;
         ApplyColorButton.IsEnabled = snapshot.IntegrationLoaded;
         CancelColorButton.IsEnabled = snapshot.IntegrationLoaded;
         ShapesGrid.ItemsSource = snapshot.Shapes;
         foreach (var item in snapshot.Shapes.Where(s => selectedKeys.Contains(s.Key))) ShapesGrid.SelectedItems.Add(item);
-        ObjectCountLabel.Text = $"{snapshot.Shapes.Count} 个对象";
+        ObjectCountLabel.Text = global::PptEase.Localization.L.F("{0} 个对象", (object)(snapshot.Shapes.Count));
         EmptyLabel.Visibility = snapshot.Shapes.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        EmptyLabel.Text = snapshot.IntegrationLoaded ? "当前幻灯片没有可管理的对象" : "请在“连接与诊断”安装并启用增强";
-        StatusText.Text = string.IsNullOrWhiteSpace(snapshot.Status) ? (snapshot.Connected ? "就绪" : "尚未连接 PowerPoint") : snapshot.Status;
+        EmptyLabel.Text = snapshot.IntegrationLoaded ? global::PptEase.Localization.L.T("当前幻灯片没有可管理的对象") : global::PptEase.Localization.L.T("请在“连接与诊断”安装并启用增强");
+        StatusText.Text = string.IsNullOrWhiteSpace(snapshot.Status) ? (snapshot.Connected ? global::PptEase.Localization.L.T("就绪") : global::PptEase.Localization.L.T("尚未连接 PowerPoint")) : snapshot.Status;
         UpdateSelectionActions();
     }
 
@@ -69,7 +69,7 @@ public partial class MainWindow : Window
     private void UpdateSelectionActions()
     {
         var count = ShapesGrid.SelectedItems.Count;
-        SelectionLabel.Text = count > 0 ? $"已选择 {count} 个对象" : "按住 Ctrl 或 Shift 可多选对象";
+        SelectionLabel.Text = count > 0 ? global::PptEase.Localization.L.F("已选择 {0} 个对象", (object)(count)) : global::PptEase.Localization.L.T("按住 Ctrl 或 Shift 可多选对象");
         LockButton.IsEnabled = _integrationLoaded && count > 0;
         UnlockButton.IsEnabled = _integrationLoaded && count > 0;
         LocateButton.IsEnabled = _integrationLoaded && count == 1;

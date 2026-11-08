@@ -257,7 +257,7 @@ public sealed partial class D3DShaderRenderer : IDisposable
         try
         {
             if (errors != IntPtr.Zero) detail = Encoding.UTF8.GetString(ReadBlob(errors)).TrimEnd('\0');
-            if (hr < 0) throw new InvalidOperationException(string.IsNullOrWhiteSpace(detail) ? $"HLSL 编译失败：0x{hr:X8}" : detail);
+            if (hr < 0) throw new InvalidOperationException(string.IsNullOrWhiteSpace(detail) ? global::PptEase.Localization.L.F("HLSL 编译失败：0x{0}", ((System.IFormattable)(hr)).ToString("X8", System.Globalization.CultureInfo.CurrentCulture)) : detail);
             var bytes=ReadBlob(blob);
             lock(BytecodeCache){if(BytecodeCache.Count>=24)BytecodeCache.Clear();BytecodeCache[key]=bytes;}
             return bytes;

@@ -29,24 +29,24 @@ public sealed partial class ShaderComponentWindow
     private Task RestoreLocalDraft()
     {
         Directory.CreateDirectory(DraftDirectory);
-        var picker=new Microsoft.Win32.OpenFileDialog{Title="选择要恢复的 Shader 草稿",InitialDirectory=DraftDirectory,Filter="Shader 草稿 (*.json)|*.json"};
+        var picker=new Microsoft.Win32.OpenFileDialog{Title=global::PptEase.Localization.L.T("选择要恢复的 Shader 草稿"),InitialDirectory=DraftDirectory,Filter=global::PptEase.Localization.L.T("Shader 草稿 (*.json)|*.json")};
         if(picker.ShowDialog(this)!=true)return Task.CompletedTask;
-        var saved=JsonSerializer.Deserialize<DraftFile>(File.ReadAllText(picker.FileName))??throw new InvalidDataException("草稿损坏。");
-        if(saved.Source==null||saved.Parameters==null||saved.Textures==null||saved.Dimensions==null||saved.Fps==null||!float.IsFinite(saved.Roughness)||saved.Textures.Any(t=>t==null)||saved.Backend is not ("HLSL" or "GLSL"))throw new InvalidDataException("草稿格式无效。");
+        var saved=JsonSerializer.Deserialize<DraftFile>(File.ReadAllText(picker.FileName))??throw new InvalidDataException(global::PptEase.Localization.L.T("草稿损坏。"));
+        if(saved.Source==null||saved.Parameters==null||saved.Textures==null||saved.Dimensions==null||saved.Fps==null||!float.IsFinite(saved.Roughness)||saved.Textures.Any(t=>t==null)||saved.Backend is not ("HLSL" or "GLSL"))throw new InvalidDataException(global::PptEase.Localization.L.T("草稿格式无效。"));
         // Preserve current edits before loading another session, including the same file.
         SaveLocalDraft();
         draftSession=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+"-"+Guid.NewGuid().ToString("N")[..8];
         component.Backend=saved.Backend;component.Textures=saved.Textures;parameters.Text=saved.Parameters;
         dimensions.Text=saved.Dimensions;frameRate.Text=saved.Fps;roughness.Value=saved.Roughness;code.Text=saved.Source;
-        RefreshTextures();ScheduleDraftPreview();draftState.Text="已恢复本地草稿，正在更新预览，尚未写入 PPT";return Task.CompletedTask;
+        RefreshTextures();ScheduleDraftPreview();draftState.Text=global::PptEase.Localization.L.T("已恢复本地草稿，正在更新预览，尚未写入 PPT");return Task.CompletedTask;
     }
     private void SetupEditorTools(Panel actions)
     {
-        actions.Children.Add(WorkspaceButton("保存草稿",()=>{SaveLocalDraft(true);draftState.Text="草稿已保存在本机，未写入 PPT";return Task.CompletedTask;}));
-        actions.Children.Add(WorkspaceButton("恢复草稿",RestoreLocalDraft));
-        actions.Children.Add(WorkspaceButton("定位错误",()=>{if(errorLine>0){int index=code.GetCharacterIndexFromLineIndex(Math.Min(code.LineCount-1,errorLine-1));code.Focus();code.Select(Math.Max(0,index),0);code.ScrollToLine(Math.Max(0,errorLine-1));}return Task.CompletedTask;}));
+        actions.Children.Add(WorkspaceButton(global::PptEase.Localization.L.T("保存草稿"),()=>{SaveLocalDraft(true);draftState.Text=global::PptEase.Localization.L.T("草稿已保存在本机，未写入 PPT");return Task.CompletedTask;}));
+        actions.Children.Add(WorkspaceButton(global::PptEase.Localization.L.T("恢复草稿"),RestoreLocalDraft));
+        actions.Children.Add(WorkspaceButton(global::PptEase.Localization.L.T("定位错误"),()=>{if(errorLine>0){int index=code.GetCharacterIndexFromLineIndex(Math.Min(code.LineCount-1,errorLine-1));code.Focus();code.Select(Math.Max(0,index),0);code.ScrollToLine(Math.Max(0,errorLine-1));}return Task.CompletedTask;}));
         var caret=new TextBlock{Margin=new Thickness(8),VerticalAlignment=VerticalAlignment.Center};actions.Children.Add(caret);
-        code.SelectionChanged+=(_,_)=>{int line=code.GetLineIndexFromCharacterIndex(code.CaretIndex);caret.Text=$"行 {line+1} / {code.LineCount}";};
+        code.SelectionChanged+=(_,_)=>{int line=code.GetLineIndexFromCharacterIndex(code.CaretIndex);caret.Text=global::PptEase.Localization.L.F("行 {0} / {1}", (object)(line+1), (object)(code.LineCount));};
         code.PreviewKeyDown+=(_,e)=>{
             if(e.Key==Key.Tab&&(Keyboard.Modifiers==ModifierKeys.None||Keyboard.Modifiers==ModifierKeys.Shift)){
                 var edit=IndentSelection(code.Text,code.SelectionStart,code.SelectionLength,Keyboard.Modifiers==ModifierKeys.Shift);
@@ -61,7 +61,7 @@ public sealed partial class ShaderComponentWindow
             if(text[..Math.Min(offset,text.Length)].TrimEnd().EndsWith("{"))indent+="    ";
             code.SelectedText=Environment.NewLine+indent;code.CaretIndex=insertion+Environment.NewLine.Length+indent.Length;code.SelectionLength=0;e.Handled=true;
         };
-        Closing+=(_,e)=>{try{SaveLocalDraft();}catch(Exception ex){status.Text="本地草稿保存失败："+ex.Message;e.Cancel=true;MessageBox.Show(this,"草稿尚未保存，请复制源码备份后重试。\n"+ex.Message,"草稿保存失败",MessageBoxButton.OK,MessageBoxImage.Warning);}};
+        Closing+=(_,e)=>{try{SaveLocalDraft();}catch(Exception ex){status.Text=global::PptEase.Localization.L.T("本地草稿保存失败：")+ex.Message;e.Cancel=true;MessageBox.Show(this,global::PptEase.Localization.L.T("草稿尚未保存，请复制源码备份后重试。\n")+ex.Message,global::PptEase.Localization.L.T("草稿保存失败"),MessageBoxButton.OK,MessageBoxImage.Warning);}};
     }
     internal static (int Start,int Length,string Replacement,int CaretOffset,int SelectionLength) IndentSelection(string text,int start,int length,bool remove)
     {
@@ -85,6 +85,6 @@ public sealed partial class ShaderComponentWindow
     {
         var match=Regex.Match(message,@"\((\d+),\d+\)|ERROR:\s*\d+:(\d+):");
         errorLine=match.Success?int.Parse(match.Groups[1].Success?match.Groups[1].Value:match.Groups[2].Value):0;
-        draftState.Text="编译失败，保留上一有效预览"+(errorLine>0?$" · 第 {errorLine} 行":"");status.Text=message;
+        draftState.Text=global::PptEase.Localization.L.T("编译失败，保留上一有效预览")+(errorLine>0?global::PptEase.Localization.L.F(" · 第 {0} 行", (object)(errorLine)):"");status.Text=message;
     }
 }

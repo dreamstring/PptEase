@@ -18,7 +18,7 @@ public sealed class HostClient
         int[] processIds;
         try { processIds = processes.Where(p => targetPid == null || p.Id == targetPid).Select(p => p.Id).OrderBy(id => id).ToArray(); }
         finally { foreach (var process in processes) process.Dispose(); }
-        if (processIds.Length == 0) throw new InvalidOperationException("请先打开 PowerPoint，再加载增强。");
+        if (processIds.Length == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先打开 PowerPoint，再加载增强。"));
         Exception? last = null;
         foreach (var processId in processIds)
         {
@@ -32,11 +32,11 @@ public sealed class HostClient
                 var id = Guid.NewGuid().ToString("N");
                 await writer.WriteLineAsync(JsonSerializer.Serialize(new { op, id, payload = payload ?? new { } }));
                 var line = await reader.ReadLineAsync(cancellation.Token);
-                if (line == null) throw new IOException("PowerPoint 增强连接已关闭，请刷新。");
+                if (line == null) throw new IOException(global::PptEase.Localization.L.T("PowerPoint 增强连接已关闭，请刷新。"));
                 using var doc = JsonDocument.Parse(line);
                 var response = doc.RootElement;
-                if (response.TryGetProperty("id", out var replyId) && replyId.GetString() != id) throw new IOException("响应标识不匹配，请重新连接。");
-                if (!response.GetProperty("ok").GetBoolean()) throw new InvalidOperationException(response.TryGetProperty("error", out var error) ? error.GetString() : "PowerPoint 操作失败。");
+                if (response.TryGetProperty("id", out var replyId) && replyId.GetString() != id) throw new IOException(global::PptEase.Localization.L.T("响应标识不匹配，请重新连接。"));
+                if (!response.GetProperty("ok").GetBoolean()) throw new InvalidOperationException(response.TryGetProperty("error", out var error) ? error.GetString() : global::PptEase.Localization.L.T("PowerPoint 操作失败。"));
                 return response.GetProperty("result").Clone();
             }
             catch (TimeoutException ex) { last = ex; }
@@ -55,7 +55,7 @@ public sealed class HostClient
     public async Task<HostSnapshot> SetLockedAsync(IEnumerable<ShapeItem> items, bool locked)
     {
         var selected = items.ToArray();
-        if (selected.Length == 0) throw new InvalidOperationException("请先选择对象。");
+        if (selected.Length == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择对象。"));
         var result = await RequestAsync(locked ? "lock" : "unlock", new { keys = selected.Select(s => s.Key).ToArray() });
         return result.Deserialize<HostSnapshot>(JsonOptions) ?? await RefreshAsync();
     }

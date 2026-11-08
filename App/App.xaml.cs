@@ -23,6 +23,7 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) => { _window?.AppendLog(args.Exception.Message); args.Handled = true; };
         try
         {
+            await UiLanguage.InitializeAsync(e.Args);
             if(e.Args.Length==2&&e.Args[0]=="--shader-controls-test"){
                 ShutdownMode=ShutdownMode.OnExplicitShutdown;
                 try{File.WriteAllText(e.Args[1]+".json",JsonSerializer.Serialize(ShapeSliderWindow.RenderControlGallery(e.Args[1])));Shutdown(0);}catch(Exception ex){File.WriteAllText(e.Args[1]+".json",JsonSerializer.Serialize(new{passed=false,error=ex.ToString()}));Shutdown(1);}return;
@@ -191,7 +192,7 @@ public partial class App : Application
     {
         var keys = _window!.SelectedShapes.Select(s => s.Key).ToArray();
         var response = await _host.RequestAsync(op, new { keys });
-        _window.AppendLog(op == "pickColor" ? "已调用 PPT 原生吸管。点击取色；在 PPT 中按 Esc 取消。" : op == "applyColor" ? "赋色已准备。请在 PowerPoint 选择目标对象。" : "已取消赋色；原生吸管请在 PPT 中按 Esc 取消。");
+        _window.AppendLog(op == "pickColor" ? global::PptEase.Localization.L.T("已调用 PPT 原生吸管。点击取色；在 PPT 中按 Esc 取消。") : op == "applyColor" ? global::PptEase.Localization.L.T("赋色已准备。请在 PowerPoint 选择目标对象。") : global::PptEase.Localization.L.T("已取消赋色；原生吸管请在 PPT 中按 Esc 取消。"));
         await RefreshAsync();
     });
     private async Task RefreshAsync() => _window?.ApplySnapshot(await _host.RefreshAsync());

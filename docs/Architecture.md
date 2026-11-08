@@ -93,3 +93,92 @@ WPF 编辑器包含源码、贴图、声明参数、控件绑定和保持宽高�
 ## 11. 发布验证
 
 源码、standalone 包、演示文件应分别保存。构建与 Ribbon XML/回调测试能检查图标声明和接口，不等于验证每个 Office 版本真实绘制。手工测试仍应覆盖切页返回、退出放映、保存重开、数值框输入后拖动、DPI/多屏、Office 版本变化。
+
+---
+
+# English
+
+## 1. Three execution components
+
+PptEase combines a C# desktop application with a PowerPoint COM add-in. The manager and Shader Studio use .NET 9 WPF. The x64 COM host runs inside PowerPoint on .NET Framework 4.x. The GPU player is a separate process launched from the same executable with `--shader-runtime <PowerPoint PID>`.
+
+The COM host interprets presentations and performs Office operations. WPF provides editing and installation. The GPU process renders shaders to presentation windows. A shader is not a new native PowerPoint Shape type. The diagram in the Chinese section shows these components and their connections.
+
+## 2. Installation and startup
+
+`App/IntegrationInstaller.cs` registers the COM class and PowerPoint add-in. `MaintenanceDeployment.cs` identifies deployments by SHA-256 hashes of key files and copies the application to a versioned directory under the user's LocalAppData. The installer verifies the copies. PowerPoint loads the host at its next startup; an already loaded host requires saving presentations and restarting PowerPoint to complete an upgrade.
+
+`build.ps1` compiles the host with the Framework compiler, then publishes WPF with `dotnet publish -r win-x64 --self-contained true`. Standalone means a complete folder containing the .NET runtime, not a single executable. Office, GPU drivers, and WebView2 for GLSL remain external dependencies.
+
+## 3. Ribbon and communication
+
+`Host/Connect.cs` implements COM connection and Ribbon XML callbacks. Office draws native icons through `imageMso`, avoiding blurry low-resolution images at high DPI. `RibbonIcons.cs` supplies icons for the ribbon and dynamic menus. Theme colors use generated swatches through `GetThemeColorImage` instead.
+
+Each PowerPoint process has a `PptEase-<PID>` named pipe. Requests use newline-delimited JSON with id, op, and payload; responses carry the matching id, ok, and result/error. The pipe ACL allows only the current Windows user. The host dispatches COM operations to the STA thread rather than accessing Office concurrently from rendering threads. `App/HostClient.cs` handles connections, timeouts, and response validation.
+
+## 4. Layout tools
+
+**Smart eyedropper:** detects text selections, text boxes, ordinary shapes, and lines, then invokes the matching native PowerPoint command through CommandBars.ExecuteMso. It does not implement screen-pixel sampling itself.
+
+**Tighten text boxes:** reads TextFrame2 wrapping, autofit, size, and position. Single-line boxes shrink in both dimensions; multiline boxes retain their layout width. It changes the box rather than reducing the font size, and retains previous state for error recovery.
+
+**Fonts and colors:** traverses document content to collect fonts and colors. Theme extraction includes text, shapes, and gradient stops and maps them to Office's 12 theme slots. This is not an unlimited palette. Applying a color respects the current text or shape selection.
+
+**Live template slide:** stores a template SlideID in presentation Tags. Menus reread source objects when opened; applying a style uses Office formatting-copy interfaces. Changes to the source slide can therefore be reflected. Template selection is document state, separate from document fonts and theme colors.
+
+**Master foreground objects:** marked master/layout objects generate ordinary slide shapes on slide creation or through an explicit completion command. Source markers prevent duplication. This lets supported master artwork cover slide pictures without changing PowerPoint's global rendering order. Currently restricted to ordinary opaque, solid-color shapes without shadows or text.
+
+**Locking:** maintains lock/unlock commands and the current-slide list, refreshing context on slide changes. Left-click pass-through of locked objects is not fully implemented; the presence of a button does not imply the behavior is complete.
+
+## 5. Free canvas
+
+`NativeCanvas.cs` checks a specific ppcore.dll hash and entry bytes before calling internal canvas view/origin interfaces. `CanvasInput.cs` handles the corresponding drag, wheel, and zoom input; `CanvasFeature.cs` manages the toggle. This part depends on private Office implementation details.
+
+These are not general Office APIs. A different hash after an Office update prevents activation until compatibility is verified again. Native rendering limitations around extreme panning, clipping, and guide synchronization remain. This is not an unlimited canvas for every Office version.
+
+## 6. Shader document format
+
+Inserting a shader leaves a native static cover in PowerPoint and writes complete component data to shape Tags. `Shared/ShaderComponent.cs` describes the backend, source, parameters, textures, output size, FPS, re-entry policy, and control bindings.
+
+`ShaderPayload.cs` compresses UTF-8 JSON with Deflate, converts it to hexadecimal, and splits it into 200-character chunks. Office Tags can change letter case, making direct Base64 or source storage unreliable. The manifest contains a generation identifier, chunk count, and SHA-256. Chunks are written and read back before publishing the manifest; failure retains the previous record. The uncompressed payload limit is 4 MiB.
+
+Computers without PptEase show only the cover. Dynamic rendering depends on the local runtime, but the PPTX requires no macros. BOM handling in the generator and HLSL compilation entry point prevents invalid characters after generated headers are prepended.
+
+## 7. GPU rendering
+
+**HLSL:** `D3DShaderRenderer.cs` compiles ps_5_0 and uses Direct3D 11. Hardware devices provide real-time rendering; WARP is a compatibility/test path. Time, resolution, and custom float parameters are updated through constant buffers; textures are bound as shader resources. Parameter changes do not recompile the shader.
+
+**GLSL:** `WebGlFrameRenderer.cs` and `preview.html` execute GLSL ES through WebView2/WebGL. This is a separate backend; HLSL syntax and performance characteristics do not automatically carry over.
+
+**In-place display:** `GpuSurfaceWindow.cs` creates a Win32 surface that follows the owning PowerPoint window without activation or input capture. HLSL playback uses GPU presentation; cover generation and some previews require pixel readback. Frames are not repeatedly pasted into the slide, so playback does not continually modify the document.
+
+**Scene scheduling:** `GpuShaderRuntimeWindow.cs` queries document, slide/slideshow context, placement, and parameters approximately every 50 ms for active scenes and 150 ms without a scene. Compilation and initialization run asynchronously. Editing and slideshow on the same slide can reuse resources; actual slide changes release surfaces. Stale asynchronous results cannot restore an old slide. Visible paused slides remain interactive; black, white, and ended slideshow states are handled separately.
+
+**Limitations:** complex foreground occlusion, rotation, grouping, or object animation may fall back to the cover. Overlay windows cannot participate unconditionally in arbitrary PowerPoint object compositing and transitions. These are architectural limits requiring individual adaptations.
+
+## 8. Interactive controls
+
+Insertion creates styled ordinary PowerPoint shapes and groups them for movement and resizing in edit mode. Bindings record the target component and track/handle ShapeIds. Sliders and checkboxes bind one parameter; disks and square pads bind X/Y parameters.
+
+During preview/slideshow, `ShapeSliderWindow.cs` supplies an interaction layer. Sliders map normalized position to a parameter range. Square pads map X/Y independently; disks constrain the position to a circle; checkboxes toggle between two values. Numeric fields display one decimal place and accept input. Separating the document shapes from runtime input preserves normal layout editing.
+
+Interaction values update the GPU first, then are coalesced and sent to the host. Short-lived overrides prevent stale polling results from overwriting a recent drag. Scene, component revision, and target references are checked again so delayed callbacks cannot affect a new slide. Runtime and static handles must coordinate hiding/restoration to avoid duplicate handles. Input capture, numeric-field commits, and display scaling are handled separately; earlier dragging, residual-handle, and distortion defects originated here rather than in the shader itself.
+
+## 9. Shader Studio
+
+The WPF editor includes source, textures, declared parameters, bindings, and an aspect-ratio-preserving draft preview. `// @param name min max default` drives the parameter UI, and the backend supplies custom HLSL parameter declarations. Draft previews are separate from writing to PowerPoint. Writing is explicit so temporary edits do not immediately change the document. Textures are stored with the component. `StudioTheme.cs` manages styling.
+
+## 10. Suggested source reading order
+
+1. `App/App.xaml.cs`: startup modes.
+2. `Host/Connect.cs`: Office lifecycle, ribbon, and pipe.
+3. `Host/ShaderComponents.cs` and `ShaderPlacement.cs`: document components and placement constraints.
+4. `Shared/ShaderComponent.cs` and `ShaderPayload.cs`: persistence protocol.
+5. `App/Shader/GpuShaderRuntimeWindow.cs`: runtime lifecycle.
+6. `D3DShaderRenderer.cs` and `GpuSurfaceWindow.cs`: compilation and presentation.
+7. `ShapeSliderWindow.cs`: control interaction.
+8. `ShaderComponentWindow.cs`: editor.
+
+## 11. Release validation
+
+Keep source, standalone packages, and demonstration files separate. Build and Ribbon XML/callback tests validate declarations and interfaces, not actual rendering across all Office versions. Manual tests should cover leaving and returning to a slide, exiting slideshow, saving/reopening, dragging after numeric input, DPI/multiple displays, and Office version changes.

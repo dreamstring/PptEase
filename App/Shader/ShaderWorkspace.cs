@@ -32,33 +32,33 @@ public sealed partial class ShaderComponentWindow
         var layout=new DockPanel{Margin=new Thickness(12),Background=Background};Content=layout;
         var header=new DockPanel{Margin=new Thickness(0,0,0,16)};DockPanel.SetDock(header,Dock.Top);layout.Children.Add(header);
         header.Children.Add(new TextBlock{Text="Shader Studio",FontSize=19,FontWeight=FontWeights.SemiBold});
-        header.Children.Add(new TextBlock{Text="   GPU · 参数与放映交互",Foreground=Muted,VerticalAlignment=VerticalAlignment.Center});
+        header.Children.Add(new TextBlock{Text=global::PptEase.Localization.L.T("   GPU · 参数与放映交互"),Foreground=Muted,VerticalAlignment=VerticalAlignment.Center});
         // Keep command handlers, but move texture controls into the resource rail.
-        var resourceButtons=toolbar.Children.OfType<Button>().Where(b=>b.Content is string s&&(s.Contains("纹理"))).ToArray();
+        var resourceButtons=toolbar.Children.OfType<Button>().Where(b=>b.Content is string s&&(s==global::PptEase.Localization.L.T("导入纹理")||s==global::PptEase.Localization.L.T("移除该纹理"))).ToArray();
         foreach(var b in resourceButtons)toolbar.Children.Remove(b);
         toolbar.Children.Remove(textureName);toolbar.Children.Remove(roughness);
-        foreach(var label in toolbar.Children.OfType<TextBlock>().Where(t=>t.Text=="粗糙度").ToArray())toolbar.Children.Remove(label);
+        foreach(var label in toolbar.Children.OfType<TextBlock>().Where(t=>t.Text==global::PptEase.Localization.L.T("粗糙度")).ToArray())toolbar.Children.Remove(label);
         DockPanel.SetDock(toolbar,Dock.Top);toolbar.Margin=new Thickness(0,0,0,12);layout.Children.Add(toolbar);
         var footer=new Border{Background=PanelBrush,CornerRadius=new CornerRadius(3),Padding=new Thickness(12),Margin=new Thickness(0,12,0,0),Child=new ScrollViewer{Content=status,MaxHeight=110,VerticalScrollBarVisibility=ScrollBarVisibility.Auto}};DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
         var grid=new Grid();grid.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(290),MinWidth=180,MaxWidth=420});grid.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(16)});grid.ColumnDefinitions.Add(new ColumnDefinition());layout.Children.Add(grid);
         var railDivider=new GridSplitter{Width=6,HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Stretch,ResizeDirection=GridResizeDirection.Columns,ResizeBehavior=GridResizeBehavior.PreviousAndNext};Grid.SetColumn(railDivider,1);grid.Children.Add(railDivider);
         var sections=new StackPanel();var rail=sections;var railScroll=new ScrollViewer{Content=sections,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};grid.Children.Add(new Border{Background=PanelBrush,CornerRadius=new CornerRadius(3),Padding=new Thickness(12),Child=railScroll});
-        void Heading(string text){rail=new StackPanel();sections.Children.Add(new Expander{Header=text,IsExpanded=text=="参数",Content=rail,Margin=new Thickness(0,8,0,8)});}
-        Heading("贴图资源");rail.Children.Add(new TextBlock{Text="输入槽名，然后导入图片。纹理随组件保存。",Foreground=Muted,TextWrapping=TextWrapping.Wrap});
+        void Heading(string text){rail=new StackPanel();sections.Children.Add(new Expander{Header=text,IsExpanded=text==global::PptEase.Localization.L.T("参数"),Content=rail,Margin=new Thickness(0,8,0,8)});}
+        Heading(global::PptEase.Localization.L.T("贴图资源"));rail.Children.Add(new TextBlock{Text=global::PptEase.Localization.L.T("输入槽名，然后导入图片。纹理随组件保存。"),Foreground=Muted,TextWrapping=TextWrapping.Wrap});
         textureName.Width=double.NaN;textureName.Margin=new Thickness(0,8,0,4);rail.Children.Add(textureName);
         var texturesBar=new WrapPanel();foreach(var b in resourceButtons){b.Padding=new Thickness(10,6,10,6);texturesBar.Children.Add(b);}rail.Children.Add(texturesBar);rail.Children.Add(textureRows);
-        Heading("参数");
+        Heading(global::PptEase.Localization.L.T("参数"));
 
         rail.Children.Add(parameterRows);
-        rail.Children.Add(WorkspaceButton("从源码刷新参数",()=>{RefreshParameterPanel();return Task.CompletedTask;}));
-        rail.Children.Add(WorkspaceButton("加载 gain 调参示例",()=>{
+        rail.Children.Add(WorkspaceButton(global::PptEase.Localization.L.T("从源码刷新参数"),()=>{RefreshParameterPanel();return Task.CompletedTask;}));
+        rail.Children.Add(WorkspaceButton(global::PptEase.Localization.L.T("加载 gain 调参示例"),()=>{
             component.Backend="HLSL";code.Text="// @param gain 0 2 1\n"+D3DShaderRenderer.DefaultSource.Replace("base * glow *","base * gain * glow *");
-            parameters.Text="{\"gain\":1}";component.Bindings.Clear();RefreshParameterPanel();status.Text="示例：gain 控制亮度。编译写入 → 播放 → 拖面板滑块；点创建形状滑块可绑定放映控件。";return Task.CompletedTask;
+            parameters.Text="{\"gain\":1}";component.Bindings.Clear();RefreshParameterPanel();status.Text=global::PptEase.Localization.L.T("示例：gain 控制亮度。编译写入 → 播放 → 拖面板滑块；点创建形状滑块可绑定放映控件。");return Task.CompletedTask;
         }));
         settings.Children.Remove(parameters);
-        var advanced=new Expander{Header="高级 · 参数 JSON",Content=parameters,Margin=new Thickness(0,12,0,0)};rail.Children.Add(advanced);
+        var advanced=new Expander{Header=global::PptEase.Localization.L.T("高级 · 参数 JSON"),Content=parameters,Margin=new Thickness(0,12,0,0)};rail.Children.Add(advanced);
         // Output controls remain grouped at the bottom of the rail.
-        var output=settings.Children.OfType<WrapPanel>().First();settings.Children.Remove(output);Heading("输出与播放");rail.Children.Add(output);
+        var output=settings.Children.OfType<WrapPanel>().First();settings.Children.Remove(output);Heading(global::PptEase.Localization.L.T("输出与播放"));rail.Children.Add(output);
         var editor=new DockPanel();Grid.SetColumn(editor,2);grid.Children.Add(editor);
         var caption=new TextBlock{Text="SOURCE  /  HLSL · GLSL",Foreground=Muted,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,0,0,8)};DockPanel.SetDock(caption,Dock.Top);editor.Children.Add(caption);
         code.Background=new SolidColorBrush(Color.FromRgb(24,30,44));code.Foreground=new SolidColorBrush(Color.FromRgb(220,228,244));code.CaretBrush=Brushes.White;code.FontSize=14;code.Padding=new Thickness(18);code.VerticalContentAlignment=VerticalAlignment.Top;code.BorderThickness=new Thickness(0);editor.Children.Add(code);
@@ -81,10 +81,10 @@ public sealed partial class ShaderComponentWindow
     }
     private async Task RequireSavedParameters(params string[] names)
     {
-        if(key==null)throw new InvalidOperationException("请先编译并写入组件，再创建放映控件。");
+        if(key==null)throw new InvalidOperationException(global::PptEase.Localization.L.T("请先编译并写入组件，再创建放映控件。"));
         var reply=await host.RequestAsync("shaderGet",new{key});
-        var saved=reply.GetProperty("Component").Deserialize<ShaderComponent>()??throw new InvalidDataException("文稿组件已不存在，请重新选择组件。");
-        if(names.Any(name=>!saved.Parameters.ContainsKey(name)))throw new InvalidOperationException("选中的参数尚未写入文稿组件。请先编译并写入幻灯片，再绑定控件。");
+        var saved=reply.GetProperty("Component").Deserialize<ShaderComponent>()??throw new InvalidDataException(global::PptEase.Localization.L.T("文稿组件已不存在，请重新选择组件。"));
+        if(names.Any(name=>!saved.Parameters.ContainsKey(name)))throw new InvalidOperationException(global::PptEase.Localization.L.T("选中的参数尚未写入文稿组件。请先编译并写入幻灯片，再绑定控件。"));
     }
     private void RefreshParameterPanel()
     {
@@ -94,13 +94,13 @@ public sealed partial class ShaderComponentWindow
             var ranges=new Dictionary<string,(double Min,double Max)>();
             foreach(Match match in Regex.Matches(code.Text,@"//\s*@param\s+(\w+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)")){
                 string name=match.Groups[1].Value;double min=double.Parse(match.Groups[2].Value,CultureInfo.InvariantCulture),max=double.Parse(match.Groups[3].Value,CultureInfo.InvariantCulture);float initial=float.Parse(match.Groups[4].Value,CultureInfo.InvariantCulture);
-                if(!double.IsFinite(min)||!double.IsFinite(max)||min>=max||!float.IsFinite(initial))throw new InvalidDataException("参数范围无效："+name);
+                if(!double.IsFinite(min)||!double.IsFinite(max)||min>=max||!float.IsFinite(initial))throw new InvalidDataException(global::PptEase.Localization.L.T("参数范围无效：")+name);
                 if(name=="time"||name=="resolution"||name=="roughness")continue;ranges[name]=(min,max);values.TryAdd(name,initial);
             }
             if(component.Backend=="GLSL")foreach(Match match in Regex.Matches(code.Text,@"\buniform\s+float\s+(\w+)\s*;")){string name=match.Groups[1].Value;if(name!="time"&&name!="roughness")values.TryAdd(name,0);}
             parameters.Text=JsonSerializer.Serialize(values);parameterRows.Children.Clear();
             var removedBindings=component.Bindings.Where(b=>!values.ContainsKey(b.Parameter)&&b.Parameter!="roughness").Select(b=>b.Parameter).Distinct().ToArray();
-            if(removedBindings.Length>0)parameterRows.Children.Add(new TextBlock{Text="这些参数已从草稿移除，应用时将解除绑定："+string.Join("、",removedBindings),Foreground=Brushes.DarkOrange,TextWrapping=TextWrapping.Wrap});
+            if(removedBindings.Length>0)parameterRows.Children.Add(new TextBlock{Text=global::PptEase.Localization.L.T("这些参数已从草稿移除，应用时将解除绑定：")+string.Join("、",removedBindings),Foreground=Brushes.DarkOrange,TextWrapping=TextWrapping.Wrap});
             foreach(var pair in values.Where(p=>p.Key!="roughness")){
                 string name=pair.Key;var range=ranges.TryGetValue(name,out var found)?found:(Math.Min(0,pair.Value),Math.Max(1,pair.Value));
                 var box=new StackPanel{Margin=new Thickness(0,12,0,0)};parameterRows.Children.Add(box);
@@ -114,22 +114,22 @@ public sealed partial class ShaderComponentWindow
             }
             var parameterContent=new StackPanel();foreach(UIElement child in parameterRows.Children.Cast<UIElement>().ToArray()){parameterRows.Children.Remove(child);parameterContent.Children.Add(child);}
             var bindingPanel=new StackPanel{Margin=new Thickness(0,12,0,0)};
-            var tabs=new TabControl();tabs.Items.Add(new TabItem{Header="参数",Content=parameterContent});tabs.Items.Add(new TabItem{Header="控件绑定",Content=bindingPanel});parameterRows.Children.Add(tabs);
-            var type=new ComboBox{ItemsSource=new[]{"滑块 · 单参数","圆盘 · X / Y","复选框 · 开关","方形坐标 · X / Y"},SelectedIndex=0,Margin=new Thickness(0,4,0,8)};
+            var tabs=new TabControl();tabs.Items.Add(new TabItem{Header=global::PptEase.Localization.L.T("参数"),Content=parameterContent});tabs.Items.Add(new TabItem{Header=global::PptEase.Localization.L.T("控件绑定"),Content=bindingPanel});parameterRows.Children.Add(tabs);
+            var type=new ComboBox{ItemsSource=new[]{global::PptEase.Localization.L.T("滑块 · 单参数"),global::PptEase.Localization.L.T("圆盘 · X / Y"),global::PptEase.Localization.L.T("复选框 · 开关"),global::PptEase.Localization.L.T("方形坐标 · X / Y")},SelectedIndex=0,Margin=new Thickness(0,4,0,8)};
             var names=values.Keys.Where(n=>n!="roughness").ToArray();
             var target=new ComboBox{ItemsSource=names,SelectedIndex=names.Length>0?0:-1};
             var targetY=new ComboBox{ItemsSource=names,SelectedIndex=names.Length>1?1:-1,Margin=new Thickness(0,6,0,0),Visibility=Visibility.Collapsed};
-            bindingPanel.Children.Add(new TextBlock{Text="控件类型",Foreground=Muted});bindingPanel.Children.Add(type);
-            var xLabel=new TextBlock{Text="目标参数",Foreground=Muted};var yLabel=new TextBlock{Text="Y 轴参数",Foreground=Muted,Visibility=Visibility.Collapsed};
+            bindingPanel.Children.Add(new TextBlock{Text=global::PptEase.Localization.L.T("控件类型"),Foreground=Muted});bindingPanel.Children.Add(type);
+            var xLabel=new TextBlock{Text=global::PptEase.Localization.L.T("目标参数"),Foreground=Muted};var yLabel=new TextBlock{Text=global::PptEase.Localization.L.T("Y 轴参数"),Foreground=Muted,Visibility=Visibility.Collapsed};
             bindingPanel.Children.Add(xLabel);bindingPanel.Children.Add(target);bindingPanel.Children.Add(yLabel);bindingPanel.Children.Add(targetY);
-            var appearance=new ComboBox{ItemsSource=new[]{"深色 · 蓝","浅色 · 蓝","石墨 · 银","深色 · 琥珀"},SelectedIndex=0,Margin=new Thickness(0,4,0,6)};
-            var numberField=new CheckBox{Content="放映数值框暂不可用 · 请用参数面板",IsEnabled=false,Margin=new Thickness(0,6,0,6)};
-            bindingPanel.Children.Add(new TextBlock{Text="外观预设",Foreground=Muted,Margin=new Thickness(0,10,0,0)});bindingPanel.Children.Add(appearance);bindingPanel.Children.Add(numberField);
-            var rangeLabel=new TextBlock{Text="最小值 / 最大值",Foreground=Muted,Margin=new Thickness(0,8,0,3)};
+            var appearance=new ComboBox{ItemsSource=new[]{global::PptEase.Localization.L.T("深色 · 蓝"),global::PptEase.Localization.L.T("浅色 · 蓝"),global::PptEase.Localization.L.T("石墨 · 银"),global::PptEase.Localization.L.T("深色 · 琥珀")},SelectedIndex=0,Margin=new Thickness(0,4,0,6)};
+            var numberField=new CheckBox{Content=global::PptEase.Localization.L.T("放映数值框暂不可用 · 请用参数面板"),IsEnabled=false,Margin=new Thickness(0,6,0,6)};
+            bindingPanel.Children.Add(new TextBlock{Text=global::PptEase.Localization.L.T("外观预设"),Foreground=Muted,Margin=new Thickness(0,10,0,0)});bindingPanel.Children.Add(appearance);bindingPanel.Children.Add(numberField);
+            var rangeLabel=new TextBlock{Text=global::PptEase.Localization.L.T("最小值 / 最大值"),Foreground=Muted,Margin=new Thickness(0,8,0,3)};
             TextBox low=new TextBox{Text="0",MinWidth=65},high=new TextBox{Text="1",MinWidth=65,Margin=new Thickness(8,0,0,0)};
             TextBox lowY=new TextBox{Text="0",MinWidth=65},highY=new TextBox{Text="1",MinWidth=65,Margin=new Thickness(8,0,0,0)};
             var rangeRow=new StackPanel{Orientation=Orientation.Horizontal};rangeRow.Children.Add(low);rangeRow.Children.Add(high);
-            var yRow=new StackPanel{Visibility=Visibility.Collapsed};yRow.Children.Add(new TextBlock{Text="Y 最小值 / 最大值",Foreground=Muted});
+            var yRow=new StackPanel{Visibility=Visibility.Collapsed};yRow.Children.Add(new TextBlock{Text=global::PptEase.Localization.L.T("Y 最小值 / 最大值"),Foreground=Muted});
             var yInputs=new StackPanel{Orientation=Orientation.Horizontal};yInputs.Children.Add(lowY);yInputs.Children.Add(highY);yRow.Children.Add(yInputs);
             bindingPanel.Children.Add(rangeLabel);bindingPanel.Children.Add(rangeRow);bindingPanel.Children.Add(yRow);
             void LoadRanges(){
@@ -146,11 +146,11 @@ public sealed partial class ShaderComponentWindow
             void UpdateBindingState(){
                 string? name=target.SelectedItem as string;
                 var binding=component.Bindings.FirstOrDefault(b=>b.Parameter==name);
-                state.Text=name==null?"尚无可绑定参数。请声明参数并编译写入组件。":binding==null?"未绑定 · 选择参数，再选择 PPT 控件。":"已绑定 · "+name+"（控件值优先）";
+                state.Text=name==null?global::PptEase.Localization.L.T("尚无可绑定参数。请声明参数并编译写入组件。"):binding==null?global::PptEase.Localization.L.T("未绑定 · 选择参数，再选择 PPT 控件。"):global::PptEase.Localization.L.T("已绑定 · ")+name+global::PptEase.Localization.L.T("（控件值优先）");
                 targetY.Visibility=yLabel.Visibility=yRow.Visibility=(type.SelectedIndex==1||type.SelectedIndex==3)?Visibility.Visible:Visibility.Collapsed;
-                xLabel.Text=(type.SelectedIndex==1||type.SelectedIndex==3)?"X 轴参数":"目标参数";
+                xLabel.Text=(type.SelectedIndex==1||type.SelectedIndex==3)?global::PptEase.Localization.L.T("X 轴参数"):global::PptEase.Localization.L.T("目标参数");
                 numberField.Visibility=type.SelectedIndex==2?Visibility.Collapsed:Visibility.Visible;
-                rangeLabel.Text=type.SelectedIndex==2?"关闭值 / 开启值（开启值须大于关闭值）":"最小值 / 最大值";
+                rangeLabel.Text=type.SelectedIndex==2?global::PptEase.Localization.L.T("关闭值 / 开启值（开启值须大于关闭值）"):global::PptEase.Localization.L.T("最小值 / 最大值");
             }
             bool loadingBinding=false;
             void LoadBinding(){
@@ -172,27 +172,27 @@ public sealed partial class ShaderComponentWindow
             type.SelectionChanged+=(_,_)=>UpdateBindingState();target.SelectionChanged+=(_,_)=>LoadBinding();targetY.SelectionChanged+=(_,_)=>{if(!loadingBinding)LoadRanges();};LoadBinding();
             async Task Bind(bool selected){
                 string? px=target.SelectedItem as string,py=(type.SelectedIndex==1||type.SelectedIndex==3)?targetY.SelectedItem as string:null;
-                if(px==null)throw new InvalidOperationException("请先声明并选择参数。");
-                if((type.SelectedIndex==1||type.SelectedIndex==3)&&(py==null||py==px))throw new InvalidOperationException("二维控件需要两个不同参数。");
+                if(px==null)throw new InvalidOperationException(global::PptEase.Localization.L.T("请先声明并选择参数。"));
+                if((type.SelectedIndex==1||type.SelectedIndex==3)&&(py==null||py==px))throw new InvalidOperationException(global::PptEase.Localization.L.T("二维控件需要两个不同参数。"));
                 await RequireSavedParameters(py==null?new[]{px}:new[]{px,py});
                 (double,double) ReadRange(TextBox a,TextBox b){
-                    if(!double.TryParse(a.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out var lo)||!double.TryParse(b.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out var hi)||!double.IsFinite(lo)||!double.IsFinite(hi)||lo>=hi||Math.Abs(lo)>float.MaxValue||Math.Abs(hi)>float.MaxValue)throw new InvalidOperationException("请输入有效范围，最大值必须大于最小值。");
+                    if(!double.TryParse(a.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out var lo)||!double.TryParse(b.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out var hi)||!double.IsFinite(lo)||!double.IsFinite(hi)||lo>=hi||Math.Abs(lo)>float.MaxValue||Math.Abs(hi)>float.MaxValue)throw new InvalidOperationException(global::PptEase.Localization.L.T("请输入有效范围，最大值必须大于最小值。"));
                     return(lo,hi);
                 }
                 var rx=ReadRange(low,high);var ry=py==null?(0d,1d):ReadRange(lowY,highY);
                 var result=await host.RequestAsync("shaderShapeSlider",new{key,parameter=px,parameterY=py,minimum=rx.Item1,maximum=rx.Item2,minimumY=ry.Item1,maximumY=ry.Item2,selected,checkbox=type.SelectedIndex==2,square=type.SelectedIndex==3,stylePreset=appearance.SelectedIndex,showValue=false});
                 component.Bindings=result.GetProperty("Component").Deserialize<ShaderComponent>()!.Bindings;
-                UpdateBindingState();status.Text="控件已绑定。保存文稿后保留绑定。";
+                UpdateBindingState();status.Text=global::PptEase.Localization.L.T("控件已绑定。保存文稿后保留绑定。");
             }
-            var bindSelected=WorkspaceButton("绑定选中控件",()=>Bind(true));
-            var bindNew=WorkspaceButton("新建并绑定控件",()=>Bind(false));
-            refreshBindingAvailability=()=>{bindSelected.IsEnabled=bindNew.IsEnabled=key!=null&&names.Length>0;bindSelected.ToolTip=bindNew.ToolTip=key==null?"请先编译并写入组件。":"选择控件类型及参数后绑定。";};
+            var bindSelected=WorkspaceButton(global::PptEase.Localization.L.T("绑定选中控件"),()=>Bind(true));
+            var bindNew=WorkspaceButton(global::PptEase.Localization.L.T("新建并绑定控件"),()=>Bind(false));
+            refreshBindingAvailability=()=>{bindSelected.IsEnabled=bindNew.IsEnabled=key!=null&&names.Length>0;bindSelected.ToolTip=bindNew.ToolTip=key==null?global::PptEase.Localization.L.T("请先编译并写入组件。"):global::PptEase.Localization.L.T("选择控件类型及参数后绑定。");};
             refreshBindingAvailability();
             bindingPanel.Children.Add(bindSelected);bindingPanel.Children.Add(bindNew);
-            bindingPanel.Children.Add(WorkspaceButton("解除当前参数绑定",async()=>{
-                if(key==null||target.SelectedItem is not string name)throw new InvalidOperationException("请选择已保存组件的参数。");
+            bindingPanel.Children.Add(WorkspaceButton(global::PptEase.Localization.L.T("解除当前参数绑定"),async()=>{
+                if(key==null||target.SelectedItem is not string name)throw new InvalidOperationException(global::PptEase.Localization.L.T("请选择已保存组件的参数。"));
                 var result=await host.RequestAsync("shaderBindSlider",new{key,parameter=name,remove=true});
-                component.Bindings=result.GetProperty("Component").Deserialize<ShaderComponent>()!.Bindings;UpdateBindingState();status.Text="绑定已解除，保留 PPT 控件。";
+                component.Bindings=result.GetProperty("Component").Deserialize<ShaderComponent>()!.Bindings;UpdateBindingState();status.Text=global::PptEase.Localization.L.T("绑定已解除，保留 PPT 控件。");
             }));
 
         }finally{updatingPanel=false;}

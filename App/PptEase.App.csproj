@@ -13,6 +13,8 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);**/bin/**;**/obj/**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\Localization.cs" Link="Localization\Localization.cs" />
+    <EmbeddedResource Include="..\Shared\Strings.en.xml" LogicalName="PptEase.Strings.en.xml" WithCulture="false" />
     <Compile Include="..\Shared\ShaderPayload.cs" Link="Shader\ShaderPayload.cs" />
     <Compile Include="..\Shared\ShaderComponent.cs" Link="Shader\ShaderComponent.cs" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />

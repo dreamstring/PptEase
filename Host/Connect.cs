@@ -67,6 +67,8 @@ namespace PptEase.Host
             try
             {
                 app = application;
+                try { global::PptEase.Localization.L.SetLanguage((int)app.LanguageSettings.LanguageID[2]); }
+                catch { global::PptEase.Localization.L.SetLanguage(System.Globalization.CultureInfo.CurrentUICulture.Name); }
                 stopping = false;
                 nonce = Guid.NewGuid().ToString("N");
                 dispatcher = new Control();
@@ -143,28 +145,28 @@ namespace PptEase.Host
         private ContextMenuStrip BuildUnlockChooser(List<ShapeHandle> all)
         {
             ContextMenuStrip menu = new ContextMenuStrip { ShowImageMargin = false };
-            menu.Items.Add(new ToolStripMenuItem("选择要解锁的对象（当前页）") { Enabled = false });
+            menu.Items.Add(new ToolStripMenuItem(global::PptEase.Localization.L.T("选择要解锁的对象（当前页）")) { Enabled = false });
             List<ShapeHandle> locked = all.Where(h => ReadLocked(h.Shape)).ToList();
-            if (locked.Count == 0) { menu.Items.Add(new ToolStripMenuItem("本页没有锁定对象") { Enabled = false }); return menu; }
+            if (locked.Count == 0) { menu.Items.Add(new ToolStripMenuItem(global::PptEase.Localization.L.T("本页没有锁定对象")) { Enabled = false }); return menu; }
             List<ShapeHandle> recent = DateTime.UtcNow - lastRightClickAt < TimeSpan.FromSeconds(5)
                 ? locked.Where(h => contextKeys.Contains(h.Key)).ToList() : new List<ShapeHandle>();
             if (recent.Count > 0)
             {
                 menu.Items.Add(new ToolStripSeparator());
-                menu.Items.Add(new ToolStripMenuItem("最近右键事件的锁定目标") { Enabled = false });
+                menu.Items.Add(new ToolStripMenuItem(global::PptEase.Localization.L.T("最近右键事件的锁定目标")) { Enabled = false });
                 foreach (ShapeHandle h in recent.Take(80)) AddUnlockChoice(menu, h);
             }
             List<ShapeHandle> remaining = locked.Where(h => !recent.Contains(h)).ToList();
             if (remaining.Count > 0)
             {
                 menu.Items.Add(new ToolStripSeparator());
-                if (recent.Count > 0) menu.Items.Add(new ToolStripMenuItem("本页其他锁定对象") { Enabled = false });
+                if (recent.Count > 0) menu.Items.Add(new ToolStripMenuItem(global::PptEase.Localization.L.T("本页其他锁定对象")) { Enabled = false });
                 foreach (ShapeHandle h in remaining.Take(80)) AddUnlockChoice(menu, h);
             }
             if (recent.Count > 80 || remaining.Count > 80)
             {
                 menu.Items.Add(new ToolStripSeparator());
-                ToolStripMenuItem more = new ToolStripMenuItem("更多对象…打开管理器");
+                ToolStripMenuItem more = new ToolStripMenuItem(global::PptEase.Localization.L.T("更多对象…打开管理器"));
                 more.Click += delegate { OpenManager(null); };
                 menu.Items.Add(more);
             }
@@ -174,8 +176,8 @@ namespace PptEase.Host
         private void AddUnlockChoice(ContextMenuStrip menu, ShapeHandle h)
         {
             string key = h.Key;
-            string name = SafeString(delegate { return (string)h.Shape.Name; }, "对象 " + h.Id);
-            ToolStripMenuItem item = new ToolStripMenuItem("解锁：" + new String(' ', Math.Min(h.Depth, 8) * 2) + name) { Tag = key };
+            string name = SafeString(delegate { return (string)h.Shape.Name; }, global::PptEase.Localization.L.T("对象 ") + h.Id);
+            ToolStripMenuItem item = new ToolStripMenuItem(global::PptEase.Localization.L.T("解锁：") + new String(' ', Math.Min(h.Depth, 8) * 2) + name) { Tag = key };
             item.Click += delegate { RibbonAction(delegate { SetLocked(new List<string> { key }, false); }); };
             menu.Items.Add(item);
         }
@@ -187,15 +189,23 @@ namespace PptEase.Host
             {
                 string exe = Convert.ToString(Microsoft.Win32.Registry.GetValue("HKEY_CURRENT_USER\\Software\\PptEase", "ManagerPath", ""));
                 if (String.IsNullOrWhiteSpace(exe)) exe = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PptEase.exe");
-                if (!File.Exists(exe)) throw new FileNotFoundException("找不到管理器，请从已安装的软件目录启动。", exe);
-                Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true });
+                if (!File.Exists(exe)) throw new FileNotFoundException(global::PptEase.Localization.L.T("找不到管理器，请从已安装的软件目录启动。"), exe);
+                Process.Start(LocalizedStartInfo(exe, ""));
             });
         }
 
         private void RibbonAction(Action action)
         {
             try { action(); }
-            catch (Exception ex) { Log("ribbon-error " + ex); MessageBox.Show(ex.Message, "PPT 增强", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+            catch (Exception ex) { Log("ribbon-error " + ex); MessageBox.Show(ex.Message, global::PptEase.Localization.L.T("PPT 增强"), MessageBoxButtons.OK, MessageBoxIcon.Information); }
+        }
+
+        private static ProcessStartInfo LocalizedStartInfo(string executable, string arguments)
+        {
+            var start = new ProcessStartInfo(executable, arguments) { UseShellExecute = false, CreateNoWindow = true };
+            // Avoid a startup pipe round trip (especially while Office is entering a slide show).
+            start.EnvironmentVariables["PPTEASE_HOST_UI_LANGUAGE"] = global::PptEase.Localization.L.Language;
+            return start;
         }
 
         public string GetLockedMenu(object control)
@@ -225,7 +235,7 @@ namespace PptEase.Host
 
         private static void MenuButton(StringBuilder x, ShapeHandle h, string prefix, ref int index)
         {
-            string label = "解锁：" + SafeString(delegate { return (string)h.Shape.Name; }, "对象 " + h.Id);
+            string label = global::PptEase.Localization.L.T("解锁：") + SafeString(delegate { return (string)h.Shape.Name; }, global::PptEase.Localization.L.T("对象 ") + h.Id);
             x.Append("<button id=\"").Append(prefix).Append("UnlockItem").Append(index++).Append("\" label=\"").Append(SecurityElement.Escape(label)).Append("\" tag=\"").Append(SecurityElement.Escape(h.Key)).Append("\" onAction=\"UnlockTagged\"/>");
         }
 
@@ -269,7 +279,7 @@ namespace PptEase.Host
                                 try
                                 {
                                     Dictionary<string, object> request = json.Deserialize<Dictionary<string, object>>(line);
-                                    if (request == null) throw new InvalidOperationException("请求不能为空。");
+                                    if (request == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("请求不能为空。"));
                                     request.TryGetValue("id", out id);
                                     object result = OnSta(delegate { return HandleRequest(request); });
                                     writer.WriteLine(json.Serialize(new { id = id, ok = true, result = result, error = (string)null }));
@@ -287,7 +297,7 @@ namespace PptEase.Host
         private object OnSta(Func<object> action)
         {
             Control control = dispatcher;
-            if (stopping || control == null || control.IsDisposed) throw new InvalidOperationException("增强已断开。");
+            if (stopping || control == null || control.IsDisposed) throw new InvalidOperationException(global::PptEase.Localization.L.T("增强已断开。"));
             if (!control.InvokeRequired) return action();
             object value = null; Exception failure = null;
             bool canceled = false; object gate = new object();
@@ -299,7 +309,7 @@ namespace PptEase.Host
                     try { value = action(); } catch (Exception ex) { failure = ex; }
                     finally { lock (gate) { if (!canceled) done.Set(); } }
                 });
-                if (!done.WaitOne(15000)) { lock (gate) { canceled = true; } throw new TimeoutException("PowerPoint 正忙，操作结果可能尚未返回。请刷新状态后再操作。"); }
+                if (!done.WaitOne(15000)) { lock (gate) { canceled = true; } throw new TimeoutException(global::PptEase.Localization.L.T("PowerPoint 正忙，操作结果可能尚未返回。请刷新状态后再操作。")); }
             }
             if (failure != null) throw failure;
             return value;
@@ -314,6 +324,7 @@ namespace PptEase.Host
             if (payload == null) payload = new Dictionary<string, object>();
             switch (op)
             {
+                case "uiLanguage": return new { language = global::PptEase.Localization.L.Language };
                 case "status": case "snapshot": return Snapshot();
                 case "lock": SetLocked(ReadKeys(payload), true); return Snapshot();
                 case "unlock": SetLocked(ReadKeys(payload), false); return Snapshot();
@@ -332,16 +343,16 @@ namespace PptEase.Host
                 case "shaderCreate": return ShaderStore(payload, true);
                 case "shaderUpdate": return ShaderStore(payload, false);
                 case "shaderFrame": return ShaderFrame(payload);
-                case "applyColor": throw new InvalidOperationException("选区赋色功能已移除，请使用智能取色。");
-                case "cancelColor": CancelColorMode("用户取消"); return Snapshot();
-                default: throw new InvalidOperationException("不支持的命令：" + op);
+                case "applyColor": throw new InvalidOperationException(global::PptEase.Localization.L.T("选区赋色功能已移除，请使用智能取色。"));
+                case "cancelColor": CancelColorMode(global::PptEase.Localization.L.T("用户取消")); return Snapshot();
+                default: throw new InvalidOperationException(global::PptEase.Localization.L.T("不支持的命令：") + op);
             }
         }
 
         private object Snapshot()
         {
-            if (app == null) return new { Connected = false, IntegrationLoaded = false, Status = "PowerPoint 连接已结束。" };
-            string name = "未打开文稿"; int slideIndex = 0; List<object> shapes = new List<object>(); string status = "增强已加载";
+            if (app == null) return new { Connected = false, IntegrationLoaded = false, Status = global::PptEase.Localization.L.T("PowerPoint 连接已结束。") };
+            string name = global::PptEase.Localization.L.T("未打开文稿"); int slideIndex = 0; List<object> shapes = new List<object>(); string status = global::PptEase.Localization.L.T("增强已加载");
             try
             {
                 if ((int)app.Presentations.Count > 0)
@@ -351,10 +362,10 @@ namespace PptEase.Host
                     dynamic slide = app.ActiveWindow.View.Slide;
                     slideIndex = (int)slide.SlideIndex;
                     HashSet<string> selected = new HashSet<string>(SelectedKeys());
-                    foreach (ShapeHandle h in GetShapes()) shapes.Add(new { Id = h.Id, SlideId = h.SlideId, Name = SafeString(delegate { return (string)h.Shape.Name; }, "对象"), Type = TypeName((int)h.Shape.Type), Locked = ReadLocked(h.Shape), Visible = (int)h.Shape.Visible != 0, Key = h.Key, Selected = selected.Contains(h.Key), Depth = h.Depth });
+                    foreach (ShapeHandle h in GetShapes()) shapes.Add(new { Id = h.Id, SlideId = h.SlideId, Name = SafeString(delegate { return (string)h.Shape.Name; }, global::PptEase.Localization.L.T("对象")), Type = TypeName((int)h.Shape.Type), Locked = ReadLocked(h.Shape), Visible = (int)h.Shape.Visible != 0, Key = h.Key, Selected = selected.Contains(h.Key), Depth = h.Depth });
                 }
             }
-            catch (Exception ex) { status = "请切换到普通编辑视图：" + Friendly(ex); }
+            catch (Exception ex) { status = global::PptEase.Localization.L.T("请切换到普通编辑视图：") + Friendly(ex); }
             return new { Connected = true, HostVersion = SafeString(delegate { return (string)app.Version; }, ""), PresentationName = name, SlideIndex = slideIndex, IntegrationLoaded = !stopping, Status = status, Shapes = shapes, Pid = Process.GetCurrentProcess().Id, ProtocolVersion = 1, HostBuild = Assembly.GetExecutingAssembly().GetName().Version.ToString(), HostAssembly = Assembly.GetExecutingAssembly().FullName, HostPath = Assembly.GetExecutingAssembly().Location, LastRightClick = lastRightClick, ConnectionError = connectionError, ColorMode = colorMode, CurrentColor = currentColor, LastColorOperation = lastColorOperation };
         }
 
@@ -405,10 +416,10 @@ namespace PptEase.Host
 
         private void SetLocked(List<string> keys, bool value)
         {
-            if (keys.Count == 0) throw new InvalidOperationException("请先选择对象，或从本页锁定对象列表选择解锁目标。");
+            if (keys.Count == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择对象，或从本页锁定对象列表选择解锁目标。"));
             Dictionary<string, ShapeHandle> all = GetShapes().ToDictionary(h => h.Key);
             List<ShapeHandle> targets = new List<ShapeHandle>();
-            foreach (string key in keys.Distinct()) { ShapeHandle h; if (!all.TryGetValue(key, out h)) throw new InvalidOperationException("目标已过期或文稿/页面已切换，请刷新对象列表。"); targets.Add(h); }
+            foreach (string key in keys.Distinct()) { ShapeHandle h; if (!all.TryGetValue(key, out h)) throw new InvalidOperationException(global::PptEase.Localization.L.T("目标已过期或文稿/页面已切换，请刷新对象列表。")); targets.Add(h); }
             List<KeyValuePair<ShapeHandle, bool>> changed = new List<KeyValuePair<ShapeHandle, bool>>();
             try
             {
@@ -418,7 +429,7 @@ namespace PptEase.Host
                     bool old = ReadLocked(h.Shape); if (old == value) continue;
                     h.Shape.Locked = value ? -1 : 0;
                     changed.Add(new KeyValuePair<ShapeHandle, bool>(h, old));
-                    if (ReadLocked(h.Shape) != value) throw new InvalidOperationException("宿主未应用该对象的锁定状态。");
+                    if (ReadLocked(h.Shape) != value) throw new InvalidOperationException(global::PptEase.Localization.L.T("宿主未应用该对象的锁定状态。"));
                 }
                 if (ribbon != null) ribbon.Invalidate();
                 Log((value ? "lock" : "unlock") + " changed=" + changed.Count);
@@ -433,15 +444,15 @@ namespace PptEase.Host
         private void SelectShape(string key)
         {
             ShapeHandle found = GetShapes().FirstOrDefault(h => h.Key == key);
-            if (found == null) throw new InvalidOperationException("目标已过期，请刷新后重试。");
-            if (ReadLocked(found.Shape)) throw new InvalidOperationException("该对象已锁定，请先解锁再定位选择。");
+            if (found == null) throw new InvalidOperationException(global::PptEase.Localization.L.T("目标已过期，请刷新后重试。"));
+            if (ReadLocked(found.Shape)) throw new InvalidOperationException(global::PptEase.Localization.L.T("该对象已锁定，请先解锁再定位选择。"));
             found.Shape.Select(-1);
         }
 
         private object CaptureSelected()
         {
             List<string> keys = SelectedKeys();
-            if (keys.Count != 1) throw new InvalidOperationException("请在 PowerPoint 中选择一个对象后再载入预览。");
+            if (keys.Count != 1) throw new InvalidOperationException(global::PptEase.Localization.L.T("请在 PowerPoint 中选择一个对象后再载入预览。"));
             ShapeHandle shape = GetShapes().First(h => h.Key == keys[0]);
             string dir = Path.Combine(Path.GetTempPath(), "PptEase", Process.GetCurrentProcess().Id.ToString());
             Directory.CreateDirectory(dir);
@@ -455,19 +466,19 @@ namespace PptEase.Host
             object value;
             if (!payload.TryGetValue("keys", out value) || !(value is IEnumerable)) return new List<string>();
             List<string> keys = new List<string>();
-            foreach (object item in (IEnumerable)value) { if (keys.Count >= 1000) throw new InvalidOperationException("单次最多处理1000个对象。"); keys.Add(Convert.ToString(item)); }
+            foreach (object item in (IEnumerable)value) { if (keys.Count >= 1000) throw new InvalidOperationException(global::PptEase.Localization.L.T("单次最多处理1000个对象。")); keys.Add(Convert.ToString(item)); }
             return keys;
         }
 
         private static bool ReadLocked(dynamic shape) { return (int)shape.Locked != 0; }
         private static string Identity(object value) { IntPtr p = Marshal.GetIUnknownForObject(value); try { return p.ToInt64().ToString("x"); } finally { Marshal.Release(p); } }
-        private static string TypeName(int type) { switch (type) { case 1: return "形状"; case 6: return "组合"; case 9: return "线条"; case 13: return "图片"; case 17: return "文本框"; case 19: return "表格"; case 28: return "SVG 图形"; case 5: return "自由形状"; case 16: return "媒体"; default: return "对象 (" + type + ")"; } }
+        private static string TypeName(int type) { switch (type) { case 1: return global::PptEase.Localization.L.T("形状"); case 6: return global::PptEase.Localization.L.T("组合"); case 9: return global::PptEase.Localization.L.T("线条"); case 13: return global::PptEase.Localization.L.T("图片"); case 17: return global::PptEase.Localization.L.T("文本框"); case 19: return global::PptEase.Localization.L.T("表格"); case 28: return global::PptEase.Localization.L.T("SVG 图形"); case 5: return global::PptEase.Localization.L.T("自由形状"); case 16: return global::PptEase.Localization.L.T("媒体"); default: return global::PptEase.Localization.L.T("对象 (") + type + ")"; } }
         private static string SafeString(Func<string> get, string fallback) { try { return get(); } catch { return fallback; } }
-        private static string Friendly(Exception ex) { return ex is COMException ? "PowerPoint 暂时无法执行：" + ex.Message : ex.Message; }
+        private static string Friendly(Exception ex) { return ex is COMException ? global::PptEase.Localization.L.T("PowerPoint 暂时无法执行：") + ex.Message : ex.Message; }
         private static string ReadBoundedLine(StreamReader reader, int maximum)
         {
             StringBuilder b = new StringBuilder(); int c;
-            while ((c = reader.Read()) != -1) { if (c == '\n') return b.ToString().TrimEnd('\r'); if (b.Length >= maximum) throw new InvalidOperationException("请求超过允许大小。"); b.Append((char)c); }
+            while ((c = reader.Read()) != -1) { if (c == '\n') return b.ToString().TrimEnd('\r'); if (b.Length >= maximum) throw new InvalidOperationException(global::PptEase.Localization.L.T("请求超过允许大小。")); b.Append((char)c); }
             return b.Length == 0 ? null : b.ToString();
         }
         private static void Log(string message)
