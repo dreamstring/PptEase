@@ -1,3 +1,7 @@
+# 单页交互示例
+
+[下载 Graffiti-Sample.pptx](Graffiti-Sample.pptx?raw=true)（1 页）。保留最终双控制器页面及内嵌 Shader、贴图和绑定，无需 VBA / ActiveX。安装 PptEase 后进入放映即可拖动；左圆盘选择风格，右方形控制流动与滴液。
+
 # 涂鸦材质双控演示
 
 从 Release 的 standalone 包 Samples 目录取得 `Graffiti-Dual-Control.pptx` 后打开，安装 PptEase 后在放映模式交互。
