@@ -4,7 +4,7 @@ Windows PowerPoint 增强工具：排版辅助、原生取色、自由画布、G
 
 ![PPT 增强功能区](docs/images/ppt-enhance-ribbon.png)
 
-[下载单页涂鸦交互示例](Samples/Graffiti/Graffiti-Sample.pptx?raw=true)：安装 PptEase 后进入放映，左圆盘选择材质风格，右方形控制流动速度与滴液。示例已内嵌 Shader、贴图和控件绑定；未安装时显示静态封面。
+[下载单页涂鸦交互示例](Samples/Graffiti/Graffiti-Sample.pptx?raw=true)：作者单独分享的个人作品，仅用于演示插件的 Shader 与交互控件能力，不属于 PptEase 插件功能或内置素材库。示例作品的权利归作者所有，公开展示不代表授权复制、改编或商用。
 
 ## 使用
 
