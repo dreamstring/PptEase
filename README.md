@@ -2,13 +2,22 @@
 
 Windows PowerPoint 增强工具：排版辅助、原生取色、自由画布、GPU Shader 与放映交互控件。
 
-![PPT 增强功能区](docs/images/ppt-enhance-ribbon.png)
+![PPT 增强功能区 · 中文](docs/images/ribbon-zh-CN.png)
+
+<details>
+<summary>中文界面截图：安装与维护、Shader Studio</summary>
+
+![安装与维护 · 中文](docs/images/setup-zh-CN.png)
+
+![Shader Studio · 中文](docs/images/shader-studio-zh-CN.png)
+
+</details>
 
 [下载单页涂鸦交互示例](Samples/Graffiti/Graffiti-Sample.pptx?raw=true)：作者单独分享的个人作品，仅用于演示插件的 Shader 与交互控件能力，不属于 PptEase 插件功能或内置素材库。示例作品的权利归作者所有，公开展示不代表授权复制、改编或商用。
 
 ## 使用
 
-下载发行版 standalone ZIP，完整解压，运行 `PptEase.exe` → 安装 / 修复。保存文稿并重启 PowerPoint，打开“PPT 增强”。需要 Windows x64、64 位桌面 PowerPoint；GLSL 后端还需要 WebView2 Runtime。自包含包携带 .NET 9 运行时，但不包含 Office。
+下载 [单 EXE 发行版](https://github.com/dreamstring/PptEase/releases/latest)，运行 `PptEase-v0.1.1-win-x64-standalone.exe` → 安装 / 修复。保存文稿并重启 PowerPoint，打开“PPT 增强”。需要 Windows x64、64 位桌面 PowerPoint；GLSL 后端还需要 WebView2 Runtime。自包含包携带 .NET 9 运行时，但不包含 Office。
 
 ## 构建
 
@@ -50,13 +59,24 @@ Windows PowerPoint 增强工具：排版辅助、原生取色、自由画布、G
 
 # English
 
+![PptEase ribbon · English](docs/images/ribbon-en.png)
+
+<details>
+<summary>English screenshots: Installation & maintenance, Shader Studio</summary>
+
+![Installation & maintenance](docs/images/setup-en.png)
+
+![Shader Studio](docs/images/shader-studio-en.png)
+
+</details>
+
 PptEase enhances Windows PowerPoint with layout tools, the native eyedropper, a free-canvas mode, GPU shaders, and interactive slideshow controls.
 
 [Download the single-slide graffiti sample](Samples/Graffiti/Graffiti-Sample.pptx?raw=true). This is the author's personal artwork, shared separately to demonstrate shader playback and controls. It is not a plugin feature or built-in asset library. Rights remain with the author; public availability does not grant permission to copy, adapt, or use the artwork commercially.
 
 ## Usage
 
-Download and fully extract the standalone release ZIP. Run `PptEase.exe`, choose Install / Repair (安装 / 修复), save your presentations, and restart PowerPoint. Open the PPT 增强 tab. Windows x64 and 64-bit desktop PowerPoint are required. The GLSL backend also requires WebView2 Runtime. The package includes the .NET 9 runtime, but not Office.
+Download the [single EXE release](https://github.com/dreamstring/PptEase/releases/latest). Run `PptEase-v0.1.1-win-x64-standalone.exe`, choose Install / Repair (安装 / 修复), save your presentations, and restart PowerPoint. Open the PPT 增强 tab. Windows x64 and 64-bit desktop PowerPoint are required. The GLSL backend also requires WebView2 Runtime. The package includes the .NET 9 runtime, but not Office.
 
 ## Build
 
