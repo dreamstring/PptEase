@@ -31,10 +31,6 @@ namespace PptEase.Host
                     if ((int)s.Type != 17 && (int)s.Type != 14) continue;
                     if ((int)s.HasTextFrame == 0 || (int)s.TextFrame2.HasText == 0) continue;
                     if (ReadLocked(s)) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先解锁所选文本框。"));
-                    if (Math.Abs((double)s.Rotation) > 0.01 || (int)s.TextFrame2.Orientation != 1)
-                        throw new InvalidOperationException(global::PptEase.Localization.L.T("当前先支持未旋转的横排文本框，请单独选择。"));
-                    if ((int)s.TextFrame2.AutoSize == 2)
-                        throw new InvalidOperationException(global::PptEase.Localization.L.T("选区包含自动缩小文字的文本框，请先关闭文字自动缩小，再收紧，以免字号变化。"));
                     eligible.Add((object)s);
                 }
                 if (eligible.Count == 0) throw new InvalidOperationException(global::PptEase.Localization.L.T("请先选择有文字的文本框或文字占位符。"));
@@ -47,19 +43,15 @@ namespace PptEase.Host
                         float left = (float)s.Left, top = (float)s.Top, width = (float)s.Width, height = (float)s.Height;
                         int auto = (int)frame.AutoSize, wrap = (int)frame.WordWrap, aspect = (int)s.LockAspectRatio;
                         restore.Add(delegate { box.TextFrame2.AutoSize = 0; box.LockAspectRatio = 0; box.TextFrame2.WordWrap = wrap; box.Width = width; box.Height = height; box.Left = left; box.Top = top; box.TextFrame2.AutoSize = auto; box.LockAspectRatio = aspect; });
-                        dynamic text = frame.TextRange;
-                        int lines = (int)text.Lines().Count;
-                        float textLeft = (float)text.BoundLeft, textTop = (float)text.BoundTop;
+                        // Match a click-created text box: no soft wrapping and persistent
+                        // shape-to-text autosizing. Explicit paragraph breaks remain intact.
+                        // Let Office handle local axes for rotated and vertical text.
                         s.LockAspectRatio = 0;
                         frame.AutoSize = 0;
-                        if (lines == 1) frame.WordWrap = 0;
-                        else frame.WordWrap = -1;
-                        frame.AutoSize = 1; // Grow/shrink the box, never shrink the font.
-                        if (lines > 1) s.Width = width;
-                        // Preserve the visible text position, including centered/right aligned text.
-                        s.Left = (float)s.Left + textLeft - (float)frame.TextRange.BoundLeft;
-                        s.Top = (float)s.Top + textTop - (float)frame.TextRange.BoundTop;
-                        if ((int)frame.TextRange.Lines().Count != lines) throw new InvalidOperationException(global::PptEase.Localization.L.T("收紧改变了换行，本次操作已回退。"));
+                        frame.WordWrap = 0;
+                        frame.AutoSize = 1;
+                        s.Left = left;
+                        s.Top = top;
                         s.LockAspectRatio = aspect;
                     }
                 }
@@ -374,3 +366,4 @@ namespace PptEase.Host
         }
     }
 }
+
