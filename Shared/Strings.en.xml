@@ -547,4 +547,9 @@ Unsaved changes may be lost. Save in PowerPoint first, or cancel this operation.
   <string name="（控件值优先）"> (control value takes priority)</string>
   <string name="）。请保存后完全退出 PowerPoint，再重新打开。">). Save, fully exit PowerPoint, then reopen.</string>
   <string name="；正在更新草稿预览，尚未写入文稿。">; updating draft preview. Not saved to the presentation yet.</string>
+  <string name="隐藏所选">Hide selection</string>
+  <string name="显示对象">Show objects</string>
+  <string name="本页隐藏对象">Hidden objects</string>
+  <string name="显示：">Show: </string>
+  <string name="本页没有隐藏对象">No hidden objects on this slide</string>
 </strings>

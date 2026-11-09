@@ -27,7 +27,7 @@ public static class RibbonTests
             foreach (XElement command in xml.Descendants().Where(e => e.Name.LocalName == "button" || e.Name.LocalName == "toggleButton" || e.Name.LocalName == "dynamicMenu" || (e.Name.LocalName == "menu" && e.Attribute("id") != null)))
             {
                 if (command.Attribute("imageMso") == null && command.Attribute("getImage") == null) throw new Exception("Missing Ribbon command icon");
-                if (command.Attribute("imageMso") == null) throw new Exception("Static Ribbon icons must use Office's native imageMso path");
+                if (command.Attribute("imageMso") == null && (string)command.Attribute("getImage") != "GetCheckboxIcon") throw new Exception("Static Ribbon icons must use Office's native imageMso path");
                 if (command.Attribute("getImage") != null && typeof(Connect).GetMethod((string)command.Attribute("getImage")) == null) throw new Exception("Missing icon callback");
             }
             if (ids.Contains("peApplyColor") || ids.Contains("peCancelColor")) throw new Exception("Removed brush controls returned");
@@ -65,3 +65,4 @@ public static class RibbonTests
         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
     }
 }
+

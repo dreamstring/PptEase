@@ -43,6 +43,7 @@ namespace PptEase.Host
                         float left = (float)s.Left, top = (float)s.Top, width = (float)s.Width, height = (float)s.Height;
                         int auto = (int)frame.AutoSize, wrap = (int)frame.WordWrap, aspect = (int)s.LockAspectRatio;
                         restore.Add(delegate { box.TextFrame2.AutoSize = 0; box.LockAspectRatio = 0; box.TextFrame2.WordWrap = wrap; box.Width = width; box.Height = height; box.Left = left; box.Top = top; box.TextFrame2.AutoSize = auto; box.LockAspectRatio = aspect; });
+                        float visibleLeft = (float)frame.TextRange.BoundLeft, visibleTop = (float)frame.TextRange.BoundTop;
                         // Match a click-created text box: no soft wrapping and persistent
                         // shape-to-text autosizing. Explicit paragraph breaks remain intact.
                         // Let Office handle local axes for rotated and vertical text.
@@ -50,8 +51,10 @@ namespace PptEase.Host
                         frame.AutoSize = 0;
                         frame.WordWrap = 0;
                         frame.AutoSize = 1;
-                        s.Left = left;
-                        s.Top = top;
+                        // Preserve the rendered text position, including paragraph alignment
+                        // and Office's rotated / vertical text coordinates.
+                        s.Left = (float)s.Left + visibleLeft - (float)frame.TextRange.BoundLeft;
+                        s.Top = (float)s.Top + visibleTop - (float)frame.TextRange.BoundTop;
                         s.LockAspectRatio = aspect;
                     }
                 }
@@ -61,6 +64,20 @@ namespace PptEase.Host
                     throw;
                 }
             });
+        }
+
+        public object GetCheckboxIcon(object control)
+        {
+            using (var bitmap = new Bitmap(32, 32))
+            using (Graphics g = Graphics.FromImage(bitmap))
+            using (var pen = new Pen(Color.FromArgb(55,55,55), 1.8f))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+                g.DrawRectangle(pen, 5, 5, 22, 22);
+                g.DrawLines(pen, new PointF[] { new PointF(9,16), new PointF(14,21), new PointF(24,10) });
+                return StylePicture.FromImage(bitmap);
+            }
         }
 
         private static StringBuilder StyleMenu() { return new StringBuilder("<menu xmlns=\"http://schemas.microsoft.com/office/2009/07/customui\">"); }
